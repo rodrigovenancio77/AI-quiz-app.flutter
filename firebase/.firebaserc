@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "gemini-quiz-app": "gemini-quiz-app-45fa9",
+    "default": "gemini-quiz-app-45fa9"
+  },
+  "targets": {},
+  "etags": {}
+}
