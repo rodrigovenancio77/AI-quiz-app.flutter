@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'auth/firebase_auth/firebase_user_provider.dart';
 import 'auth/firebase_auth/auth_util.dart';
 
@@ -22,10 +22,9 @@ void main() async {
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
-
   await initFirebase();
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -44,11 +43,17 @@ class _MyAppState extends State<MyApp> {
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
-  String getRoute([RouteMatch? routeMatch]) {
-    final RouteMatch lastMatch =
-        routeMatch ?? _router.routerDelegate.currentConfiguration.last;
-    final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-        ? lastMatch.matches
+  
+  String getRoute([RouteMatchBase? routeMatch]) {
+    if (routeMatch == null) {
+      final config = _router.routerDelegate.currentConfiguration;
+      if (config.isEmpty) {
+        return '/';
+      }
+      routeMatch = config.last;
+    }
+    final RouteMatchList matchList = routeMatch is ImperativeRouteMatch
+        ? routeMatch.matches
         : _router.routerDelegate.currentConfiguration;
     return matchList.uri.path;
   }
@@ -78,6 +83,11 @@ class _MyAppState extends State<MyApp> {
       return;
     }
 
+    // Prime auth state so the router is not stuck on the splash loader while
+    // waiting for the first authStateChanges event.
+    _appStateNotifier.update(
+      DesafIAFirebaseUser(FirebaseAuth.instance.currentUser),
+    );
     userStream = desafIAFirebaseUserStream()
       ..listen((user) {
         _appStateNotifier.update(user);

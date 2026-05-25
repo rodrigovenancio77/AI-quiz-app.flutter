@@ -35,6 +35,9 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
   // Initialize repository
   final _quizRepository = QuizRepository();
 
+  // Variável para guardar o texto pesquisado
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -42,6 +45,13 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
 
     _model.textController ??= TextEditingController();
     _model.textFieldFocusNode ??= FocusNode();
+
+    // Listener para atualizar a pesquisa em tempo real enquanto o utilizador digita
+    _model.textController!.addListener(() {
+      setState(() {
+        _searchQuery = _model.textController!.text.toLowerCase();
+      });
+    });
   }
 
   @override
@@ -67,8 +77,7 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
             'Os Meus Quizzes',
             style: FlutterFlowTheme.of(context).headlineMedium.override(
                   font: GoogleFonts.interTight(
-                    fontWeight:
-                        FlutterFlowTheme.of(context).headlineMedium.fontWeight,
+                    fontWeight: FlutterFlowTheme.of(context).headlineMedium.fontWeight,
                   ),
                   color: Colors.black,
                   fontSize: 22.0,
@@ -97,14 +106,14 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                           autofocus: false,
                           decoration: InputDecoration(
                             isDense: true,
-                            hintText: 'Pesquisar',
+                            hintText: 'Pesquisar os meus quizzes...',
                             hintStyle: FlutterFlowTheme.of(context).labelMedium,
                             enabledBorder: OutlineInputBorder(
                               borderSide: const BorderSide(color: Color(0x00000000), width: 1.0),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(color: Color(0x00000000), width: 1.0),
+                              borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 2.0),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             errorBorder: OutlineInputBorder(
@@ -134,7 +143,9 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                         size: 24.0,
                       ),
                       onPressed: () {
-                        // Lógica de pesquisa futura
+                        // A barra já pesquisa automaticamente ao digitar, 
+                        // fechar o teclado ao clicar na lupa é uma boa prática
+                        FocusScope.of(context).unfocus();
                       },
                     ),
                   ],
@@ -150,7 +161,7 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                     Expanded(
                       child: FFButtonWidget(
                         onPressed: () async {
-                          context.pushNamed(AddQuizWidget.routeName);
+                          context.pushNamed('AddQuiz');
                         },
                         text: 'Adicionar Quiz',
                         icon: const Icon(Icons.add, size: 15.0),
@@ -182,7 +193,6 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
 
                     // Estado de Erro
                     if (snapshot.hasError) {
-                      print('Erro no Firestore: ${snapshot.error}');
                       return Center(
                         child: Text(
                           'Erro ao carregar os quizzes.\nVerifica a tua ligação.',
@@ -193,7 +203,7 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                     }
 
                     // Extrair apenas os DADOS REAIS
-                    final allQuizzes = snapshot.data?.docs.map((doc) {
+                    var allQuizzes = snapshot.data?.docs.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
                       data['docId'] = doc.id; 
                       return data;
@@ -207,8 +217,28 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                       return bTime.compareTo(aTime);
                     });
 
-                    // Se o utilizador não tiver quizzes
+                    // APLICAR PESQUISA LOCAL (Filtro pelo Título)
+                    if (_searchQuery.isNotEmpty) {
+                      allQuizzes = allQuizzes.where((q) {
+                        final title = (q['title'] ?? '').toString().toLowerCase();
+                        return title.contains(_searchQuery);
+                      }).toList();
+                    }
+
+                    // Mensagens se estiver vazio
                     if (allQuizzes.isEmpty) {
+                      if (_searchQuery.isNotEmpty) {
+                        return Center(
+                          child: Text(
+                            'Nenhum quiz encontrado para "$_searchQuery".',
+                            textAlign: TextAlign.center,
+                            style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              font: GoogleFonts.inter(),
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                            ),
+                          ),
+                        );
+                      }
                       return Center(
                         child: Text(
                           'Ainda não criaste nenhum quiz.\nClica em "Adicionar Quiz" para começar!',
@@ -221,165 +251,157 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                       );
                     }
 
-                    return SingleChildScrollView(
+                    return ListView.builder(
                       padding: const EdgeInsets.only(bottom: 24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(allQuizzes.length, (index) {
-                          final quizData = allQuizzes[index];
-                          
-                          // Variáveis para a UI
-                          final docId = quizData['docId'];
-                          final title = quizData['title'] ?? 'Sem Título';
-                          final questionCount = quizData['questionCount'] ?? 0;
-                          final isPublic = quizData['isPublic'] ?? false;
-                          // Gera uma imagem aleatória baseada no ID do Quiz para ser sempre a mesma para esse Quiz
-                          final imageUrl = quizData['imageUrl'] ?? 'https://picsum.photos/seed/$docId/600';
+                      itemCount: allQuizzes.length,
+                      itemBuilder: (context, index) {
+                        final quizData = allQuizzes[index];
+                        
+                        final docId = quizData['docId'];
+                        final title = quizData['title'] ?? 'Sem Título';
+                        final questionCount = quizData['questionCount'] ?? 0;
+                        final isPublic = quizData['isPublic'] ?? false;
+                        final imageUrl = quizData['imageUrl'] ?? 'https://picsum.photos/seed/$docId/600';
 
-                          return Padding(
-                            padding: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
-                            child: Container(
-                              width: double.infinity,
-                              height: 100.0,
-                              decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: InkWell(
-                                onTap: () async {
-                                  context.pushNamed(
-                                    ResponderQuizWidget.routeName,
-                                    queryParameters: {'quizId': docId},
-                                  );
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(8.0),
-                                        bottomLeft: Radius.circular(8.0),
-                                      ),
-                                      child: Image.network(
-                                        imageUrl,
-                                        width: 100.0,
-                                        height: 100.0,
-                                        fit: BoxFit.cover,
-                                      ),
+                        return Padding(
+                          padding: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
+                          child: Container(
+                            width: double.infinity,
+                            height: 100.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: InkWell(
+                              onTap: () async {
+                                context.pushNamed(
+                                  'ResponderQuiz',
+                                  queryParameters: {'quizId': docId},
+                                );
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(8.0),
+                                      bottomLeft: Radius.circular(8.0),
                                     ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.max,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            // Título e Switch de Publico/Privado
-                                            Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    title,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                      font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                                                    ),
+                                    child: Image.network(
+                                      imageUrl,
+                                      width: 100.0,
+                                      height: 100.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  title,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
                                                   ),
                                                 ),
-                                                Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    FaIcon(FontAwesomeIcons.lock, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
-                                                    const SizedBox(width: 4.0),
-                                                    SizedBox(
+                                              ),
+                                              Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  FaIcon(FontAwesomeIcons.lock, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
+                                                  const SizedBox(width: 4.0),
+                                                  SizedBox(
+                                                    width: 28.0,
+                                                    height: 18.0,
+                                                    child: custom_widgets.HalfSizeSwitch(
                                                       width: 28.0,
                                                       height: 18.0,
-                                                      child: custom_widgets.HalfSizeSwitch(
-                                                        width: 28.0,
-                                                        height: 18.0,
-                                                        initialValue: isPublic,
-                                                        activeColor: FlutterFlowTheme.of(context).primary,
-                                                        onChanged: (newValue) async {
-                                                          await FirebaseFirestore.instance.collection('quizzes').doc(docId).update({'isPublic': newValue});
-                                                        },
-                                                      ),
+                                                      initialValue: isPublic,
+                                                      activeColor: FlutterFlowTheme.of(context).primary,
+                                                      onChanged: (newValue) async {
+                                                        await FirebaseFirestore.instance.collection('quizzes').doc(docId).update({'isPublic': newValue});
+                                                      },
                                                     ),
-                                                    const SizedBox(width: 4.0),
-                                                    Icon(Icons.public, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            // Detalhes (Questões, Tempo)
-                                            Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Text('$questionCount questões', style: FlutterFlowTheme.of(context).bodySmall),
-                                                const SizedBox(width: 8.0),
-                                                SizedBox(height: 12.0, child: VerticalDivider(thickness: 1.0, color: FlutterFlowTheme.of(context).alternate)),
-                                                const SizedBox(width: 8.0),
-                                                Text('${quizData['durationMinutes'] ?? '--'} min', style: FlutterFlowTheme.of(context).bodySmall),
-                                              ],
-                                            ),
-                                            // Botões de Ação
-                                            Row(
-                                              mainAxisSize: MainAxisSize.max,
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              children: [
-                                                FlutterFlowIconButton(
-                                                  borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFFFFD11E),
-                                                  icon: Icon(Icons.edit_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
-                                                  onPressed: () async { context.pushNamed(EditarQuizWidget.routeName, queryParameters: {'quizId': docId}); },
-                                                ),
-                                                FlutterFlowIconButton(
-                                                  borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF42436F),
-                                                  icon: Icon(Icons.share_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
-                                                  onPressed: () {},
-                                                ),
-                                                FlutterFlowIconButton(
-                                                  borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF6FC073),
-                                                  icon: Icon(Icons.remove_red_eye_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
-                                                  onPressed: () async { context.pushNamed(ResultadosQuizWidget.routeName, queryParameters: {'quizId': docId}); },
-                                                ),
-                                                FlutterFlowIconButton(
-                                                  borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFFFA8785),
-                                                  icon: Icon(Icons.delete_outline_rounded, color: FlutterFlowTheme.of(context).info, size: 16.0),
-                                                  onPressed: () async {
-                                                    // Confirmação antes de apagar
-                                                    final confirm = await showDialog<bool>(
-                                                      context: context,
-                                                      builder: (ctx) => AlertDialog(
-                                                        title: const Text('Apagar Quiz'),
-                                                        content: const Text('Tens a certeza que queres eliminar este quiz?'),
-                                                        actions: [
-                                                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                                                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Apagar', style: TextStyle(color: Colors.red))),
-                                                        ],
-                                                      ),
-                                                    ) ?? false;
+                                                  ),
+                                                  const SizedBox(width: 4.0),
+                                                  Icon(Icons.public, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: [
+                                              Text('$questionCount questões', style: FlutterFlowTheme.of(context).bodySmall),
+                                              const SizedBox(width: 8.0),
+                                              SizedBox(height: 12.0, child: VerticalDivider(thickness: 1.0, color: FlutterFlowTheme.of(context).alternate)),
+                                              const SizedBox(width: 8.0),
+                                              Text('${quizData['durationMinutes'] ?? '--'} min', style: FlutterFlowTheme.of(context).bodySmall),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: [
+                                              FlutterFlowIconButton(
+                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFFFFD11E),
+                                                icon: Icon(Icons.edit_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
+                                                onPressed: () async { context.pushNamed('EditarQuiz', queryParameters: {'quizId': docId}); },
+                                              ),
+                                              FlutterFlowIconButton(
+                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF42436F),
+                                                icon: Icon(Icons.share_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
+                                                onPressed: () {},
+                                              ),
+                                              FlutterFlowIconButton(
+                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF6FC073),
+                                                icon: Icon(Icons.remove_red_eye_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
+                                                onPressed: () async { context.pushNamed('ResultadosQuiz', queryParameters: {'quizId': docId}); },
+                                              ),
+                                              FlutterFlowIconButton(
+                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFFFA8785),
+                                                icon: Icon(Icons.delete_outline_rounded, color: FlutterFlowTheme.of(context).info, size: 16.0),
+                                                onPressed: () async {
+                                                  final confirm = await showDialog<bool>(
+                                                    context: context,
+                                                    builder: (ctx) => AlertDialog(
+                                                      title: const Text('Apagar Quiz'),
+                                                      content: const Text('Tens a certeza que queres eliminar este quiz?'),
+                                                      actions: [
+                                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+                                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Apagar', style: TextStyle(color: Colors.red))),
+                                                      ],
+                                                    ),
+                                                  ) ?? false;
 
-                                                    if (confirm) {
-                                                      await FirebaseFirestore.instance.collection('quizzes').doc(docId).delete();
-                                                    }
-                                                  },
-                                                ),
-                                              ].divide(const SizedBox(width: 8.0)),
-                                            ),
-                                          ],
-                                        ),
+                                                  if (confirm) {
+                                                    await FirebaseFirestore.instance.collection('quizzes').doc(docId).delete();
+                                                  }
+                                                },
+                                              ),
+                                            ].divide(const SizedBox(width: 8.0)),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        }),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

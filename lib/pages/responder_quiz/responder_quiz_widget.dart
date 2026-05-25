@@ -69,7 +69,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
         quizData = quizDoc.data();
         final durationMinutes = quizData?['durationMinutes'] ?? 10;
         
-        // Configurar o Timer com a NOVA SINTAXE do stop_watch_timer 3.0+
+        // Configurar o Timer
         final durationMs = durationMinutes * 60 * 1000;
         _model.timerController.timer.onStopTimer();
         _model.timerController.timer.onResetTimer();
@@ -102,7 +102,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
     if (_isFinished) return;
     _isFinished = true;
     
-    // Pára o relógio com a NOVA SINTAXE
+    // Pára o relógio
     _model.timerController.timer.onStopTimer();
 
     // Calcula a Pontuação
@@ -122,7 +122,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
     Duration taken = Duration(milliseconds: takenMs);
     String timeStr = '${taken.inMinutes}:${(taken.inSeconds % 60).toString().padLeft(2, '0')}';
 
-    // GUARDA OS RESULTADOS NA BASE DE DADOS (Sub-coleção 'results')
+    // GUARDA OS RESULTADOS NA BASE DE DADOS
     try {
       await FirebaseFirestore.instance
           .collection('quizzes')
@@ -301,6 +301,64 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                 ),
               ),
 
+              // --- NAVEGADOR DE PÁGINAS (NUMERAÇÃO) ---
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 8.0),
+                child: SizedBox(
+                  height: 45.0,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _questions.length,
+                    itemBuilder: (context, index) {
+                      bool isCurrent = _currentIndex == index;
+                      bool isAnswered = _userAnswers.containsKey(index);
+
+                      // Definição das cores dinâmicas baseadas no estado da pergunta
+                      Color bgColor = isCurrent
+                          ? FlutterFlowTheme.of(context).primary
+                          : isAnswered
+                              ? const Color(0xFF6FC073) // Verde para perguntas já respondidas
+                              : FlutterFlowTheme.of(context).secondaryBackground; // Cinza para perguntas por responder
+                      
+                      Color borderColor = isCurrent
+                          ? FlutterFlowTheme.of(context).primary
+                          : isAnswered
+                              ? const Color(0xFF6FC073)
+                              : FlutterFlowTheme.of(context).alternate;
+
+                      Color textColor = (isCurrent || isAnswered)
+                          ? Colors.white
+                          : FlutterFlowTheme.of(context).primaryText;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: InkWell(
+                          onTap: () => setState(() => _currentIndex = index),
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Container(
+                            width: 45.0,
+                            height: 45.0,
+                            decoration: BoxDecoration(
+                              color: bgColor,
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: Border.all(color: borderColor, width: 2.0),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '${index + 1}',
+                              style: FlutterFlowTheme.of(context).titleSmall.override(
+                                    font: GoogleFonts.interTight(fontWeight: FontWeight.bold),
+                                    color: textColor,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
               // --- NAVEGAÇÃO (ANTERIOR / PRÓXIMA) ---
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(24.0, 8.0, 24.0, 8.0),
@@ -354,7 +412,6 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                 padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 16.0),
                 child: FFButtonWidget(
                   onPressed: () async {
-                    // Confirma se quer submeter
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog(

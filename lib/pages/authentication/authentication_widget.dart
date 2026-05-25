@@ -940,7 +940,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                               ),
                                               filled: true,
                                               fillColor: Colors.white,
-                                              suffixIcon: const Icon(
+                                              suffixIcon: const FaIcon(
                                                 FontAwesomeIcons.pencilAlt,
                                                 color: Color(0xFFAAAEB8),
                                                 size: 20.0,
