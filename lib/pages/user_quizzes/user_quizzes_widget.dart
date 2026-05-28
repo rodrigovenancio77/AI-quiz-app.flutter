@@ -2,13 +2,11 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'dart:math' as math;
 
 // NEW IMPORTS FOR FIRESTORE AND AUTH
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -272,16 +270,9 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                               color: FlutterFlowTheme.of(context).secondaryBackground,
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            child: InkWell(
-                              onTap: () async {
-                                context.pushNamed(
-                                  'ResponderQuiz',
-                                  queryParameters: {'quizId': docId},
-                                );
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.max,
-                                children: [
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              children: [
                                   ClipRRect(
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(8.0),
@@ -316,27 +307,43 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                                                   ),
                                                 ),
                                               ),
-                                              Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  FaIcon(FontAwesomeIcons.lock, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
-                                                  const SizedBox(width: 4.0),
-                                                  SizedBox(
-                                                    width: 28.0,
-                                                    height: 18.0,
-                                                    child: custom_widgets.HalfSizeSwitch(
-                                                      width: 28.0,
-                                                      height: 18.0,
-                                                      initialValue: isPublic,
-                                                      activeColor: FlutterFlowTheme.of(context).primary,
-                                                      onChanged: (newValue) async {
-                                                        await FirebaseFirestore.instance.collection('quizzes').doc(docId).update({'isPublic': newValue});
-                                                      },
-                                                    ),
+                                              InkWell(
+                                                onTap: () async {
+                                                  await FirebaseFirestore.instance.collection('quizzes').doc(docId).update({'isPublic': !isPublic});
+                                                },
+                                                borderRadius: BorderRadius.circular(20.0),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                                                  decoration: BoxDecoration(
+                                                    color: isPublic ? FlutterFlowTheme.of(context).primary : const Color(0xFF6C6C85),
+                                                    borderRadius: BorderRadius.circular(20.0),
+                                                    boxShadow: const [
+                                                      BoxShadow(
+                                                        color: Colors.black12,
+                                                        blurRadius: 4.0,
+                                                        offset: Offset(0, 2),
+                                                      )
+                                                    ],
                                                   ),
-                                                  const SizedBox(width: 4.0),
-                                                  Icon(Icons.public, color: FlutterFlowTheme.of(context).primaryText, size: 14.0),
-                                                ],
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Icon(
+                                                        isPublic ? Icons.public : Icons.lock,
+                                                        color: Colors.white,
+                                                        size: 14.0,
+                                                      ),
+                                                      const SizedBox(width: 6.0),
+                                                      Text(
+                                                        isPublic ? 'Público' : 'Privado',
+                                                        style: FlutterFlowTheme.of(context).bodySmall.override(
+                                                          font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -360,9 +367,36 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                                                 onPressed: () async { context.pushNamed('EditarQuiz', queryParameters: {'quizId': docId}); },
                                               ),
                                               FlutterFlowIconButton(
-                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF42436F),
+                                                borderRadius: 8.0, buttonSize: 32.0, fillColor: isPublic ? const Color(0xFFB0B0B0) : const Color(0xFF42436F),
                                                 icon: Icon(Icons.share_outlined, color: FlutterFlowTheme.of(context).info, size: 16.0),
-                                                onPressed: () {},
+                                                onPressed: isPublic ? () {} : () async {
+                                                  // Gerar código aleatório de 6 caracteres
+                                                  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                                                  final rand = math.Random();
+                                                  final code = List.generate(6, (index) => chars[rand.nextInt(chars.length)]).join();
+                                                  
+                                                  // Tempo de expiração (10 minutos)
+                                                  final expiresAt = Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 10)));
+                                                  
+                                                  // Guardar no Firestore
+                                                  await FirebaseFirestore.instance.collection('quizzes').doc(docId).update({
+                                                    'shareCode': code,
+                                                    'shareCodeExpiresAt': expiresAt,
+                                                  });
+                                                  
+                                                  if (context.mounted) {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (ctx) => AlertDialog(
+                                                        title: const Text('Código Privado Gerado'),
+                                                        content: Text('Partilha este código com os teus amigos:\n\n$code\n\nEste código expira em 10 minutos!', textAlign: TextAlign.center, style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.bold)),
+                                                        actions: [
+                                                          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+                                                        ],
+                                                      ),
+                                                    );
+                                                  }
+                                                },
                                               ),
                                               FlutterFlowIconButton(
                                                 borderRadius: 8.0, buttonSize: 32.0, fillColor: const Color(0xFF6FC073),
@@ -398,7 +432,6 @@ class _UserQuizzesWidgetState extends State<UserQuizzesWidget> {
                                   ),
                                 ],
                               ),
-                            ),
                           ),
                         );
                       },

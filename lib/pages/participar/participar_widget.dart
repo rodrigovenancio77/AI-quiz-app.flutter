@@ -2,7 +2,6 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -139,8 +138,69 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                   children: [
                     Expanded(
                       child: FFButtonWidget(
-                        onPressed: () {
-                          // Lógica futura para códigos privados
+                        onPressed: () async {
+                          final TextEditingController codeController = TextEditingController();
+                          
+                          final enteredCode = await showDialog<String>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Entrar com Código'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('Insere o código de 6 caracteres do quiz privado:'),
+                                  const SizedBox(height: 12.0),
+                                  TextField(
+                                    controller: codeController,
+                                    maxLength: 6,
+                                    textCapitalization: TextCapitalization.characters,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      hintText: 'Ex: A1B2C3',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, null), child: const Text('Cancelar')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, codeController.text.trim().toUpperCase()), child: const Text('Entrar')),
+                              ],
+                            ),
+                          );
+
+                          if (enteredCode != null && enteredCode.isNotEmpty) {
+                            try {
+                              final querySnapshot = await FirebaseFirestore.instance
+                                  .collection('quizzes')
+                                  .where('shareCode', isEqualTo: enteredCode)
+                                  .limit(1)
+                                  .get();
+                                  
+                              if (querySnapshot.docs.isEmpty) {
+                                if (context.mounted) showSnackbar(context, 'Código inválido ou quiz apagado.');
+                                return;
+                              }
+                              
+                              final quizDoc = querySnapshot.docs.first;
+                              final data = quizDoc.data();
+                              final expiresAt = data['shareCodeExpiresAt'] as Timestamp?;
+                              
+                              if (expiresAt == null || expiresAt.toDate().isBefore(DateTime.now())) {
+                                if (context.mounted) showSnackbar(context, 'Este código expirou. Pede um novo código ao criador do quiz.');
+                                return;
+                              }
+                              
+                              // Código válido e não expirado, vamos entrar no quiz!
+                              if (context.mounted) {
+                                context.pushNamed(
+                                  'ResponderQuiz',
+                                  queryParameters: {'quizId': quizDoc.id},
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) showSnackbar(context, 'Erro ao verificar o código.');
+                            }
+                          }
                         },
                         text: 'Entrar com código privado',
                         icon: const Icon(Icons.vpn_key_rounded, size: 15.0),

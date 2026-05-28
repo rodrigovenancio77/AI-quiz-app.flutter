@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 
 // NOVO IMPORT: Para falar com o Firebase
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'editar_quiz_perguntas_model.dart';
 export 'editar_quiz_perguntas_model.dart';
@@ -32,11 +33,13 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
 
   // VARIÁVEIS DE ESTADO PARA O FIREBASE
   String? quizId;
-  List<DocumentSnapshot> _questionDocs = [];
+  List<DocumentSnapshot?> _questionDocs = [];
+  List<DocumentSnapshot> _deletedDocs = [];
   List<Map<String, dynamic>> _localQuestions = [];
   int _currentIndex = 0;
   bool _isLoading = true;
   bool _isInit = false;
+  int _currentOptionsCount = 4;
 
   @override
   void initState() {
@@ -71,6 +74,53 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
     }
   }
 
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Câmara'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _model.pickImage(context, ImageSource.camera);
+                  _uploadImageAndSetUrl();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Galeria'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _model.pickImage(context, ImageSource.gallery);
+                  _uploadImageAndSetUrl();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _uploadImageAndSetUrl() async {
+    if (_model.pickedImageBytes != null) {
+      setState(() => _model.isUploading = true);
+      String? url = await _model.uploadToImageBB();
+      if (url != null && _localQuestions.isNotEmpty) {
+        setState(() {
+           _localQuestions[_currentIndex]['imageUrl'] = url;
+           _model.pickedImageBytes = null;
+           _model.pickedFileObj = null;
+        });
+      }
+      setState(() => _model.isUploading = false);
+    }
+  }
+
   // VAI BUSCAR AS PERGUNTAS GERADAS PELO GEMINI
   Future<void> _fetchQuestions() async {
     if (quizId == null) return;
@@ -84,7 +134,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
           .get();
 
       _questionDocs = snap.docs;
-      _localQuestions = snap.docs.map((d) => d.data() as Map<String, dynamic>).toList();
+      _localQuestions = snap.docs.map((d) => d.data()).toList();
 
       if (_localQuestions.isNotEmpty) {
         _populateUI();
@@ -107,7 +157,9 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
     _model.textController1!.text = q['question'] ?? '';
     
     List<dynamic> opts = q['options'] ?? ['', '', '', ''];
-    _model.textController2!.text = opts.length > 0 ? opts[0] : '';
+    _currentOptionsCount = opts.length == 2 ? 2 : 4;
+
+    _model.textController2!.text = opts.isNotEmpty ? opts[0] : '';
     _model.textController3!.text = opts.length > 1 ? opts[1] : '';
     _model.textController4!.text = opts.length > 2 ? opts[2] : '';
     _model.textController5!.text = opts.length > 3 ? opts[3] : '';
@@ -125,16 +177,74 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
     if (_model.checkboxValue3 == true) correctIdx = 2;
     if (_model.checkboxValue4 == true) correctIdx = 3;
 
+    if (_currentOptionsCount == 2 && correctIdx > 1) {
+      correctIdx = 0;
+    }
+
+    final existingImageUrl = _localQuestions[_currentIndex]['imageUrl'];
+
     _localQuestions[_currentIndex] = {
       'question': _model.textController1!.text,
-      'options': [
-        _model.textController2!.text,
-        _model.textController3!.text,
-        _model.textController4!.text,
-        _model.textController5!.text,
-      ],
+      'options': _currentOptionsCount == 2
+          ? [
+              _model.textController2!.text,
+              _model.textController3!.text,
+            ]
+          : [
+              _model.textController2!.text,
+              _model.textController3!.text,
+              _model.textController4!.text,
+              _model.textController5!.text,
+            ],
       'correctAnswerIndex': correctIdx,
+      if (existingImageUrl != null) 'imageUrl': existingImageUrl,
     };
+  }
+
+  void _addNewQuestion() {
+    _saveCurrentToLocal();
+    setState(() {
+      _localQuestions.add({
+        'question': '',
+        'options': ['', '', '', ''],
+        'correctAnswerIndex': 0,
+      });
+      _questionDocs.add(null);
+      _currentIndex = _localQuestions.length - 1;
+      _populateUI();
+    });
+  }
+
+  void _removeCurrentQuestion() {
+    if (_localQuestions.length <= 1) {
+      showSnackbar(context, 'O quiz deve ter pelo menos uma pergunta.');
+      return;
+    }
+    
+    final docToRemove = _questionDocs[_currentIndex];
+    if (docToRemove != null) {
+      _deletedDocs.add(docToRemove);
+    }
+    
+    setState(() {
+      _localQuestions.removeAt(_currentIndex);
+      _questionDocs.removeAt(_currentIndex);
+      if (_currentIndex >= _localQuestions.length) {
+        _currentIndex = _localQuestions.length - 1;
+      }
+      _populateUI();
+    });
+  }
+
+  void _toggleOptionsCount() {
+    setState(() {
+      _currentOptionsCount = _currentOptionsCount == 2 ? 4 : 2;
+      if (_currentOptionsCount == 2) {
+        if (_model.checkboxValue3 == true || _model.checkboxValue4 == true) {
+          _setCorrectAnswer(0);
+        }
+      }
+    });
   }
 
   // FORÇA AS CHECKBOXES A COMPORTAREM-SE COMO RÁDIOS (Apenas 1 correta)
@@ -215,17 +325,53 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                         Column(
                           mainAxisSize: MainAxisSize.max,
                           children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8.0),
-                                topRight: Radius.circular(8.0),
-                              ),
-                              child: Image.network(
-                                'https://picsum.photos/seed/$quizId/600',
-                                width: 344.0,
-                                height: 200.0,
-                                fit: BoxFit.cover,
-                              ),
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8.0),
+                                    topRight: Radius.circular(8.0),
+                                  ),
+                                  child: Image.network(
+                                    (_localQuestions.isNotEmpty && _localQuestions[_currentIndex]['imageUrl'] != null) 
+                                        ? _localQuestions[_currentIndex]['imageUrl'] 
+                                        : 'https://picsum.photos/seed/${quizId ?? '0'}_${_currentIndex}/600',
+                                    width: 344.0,
+                                    height: 200.0,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      width: 344.0,
+                                      height: 200.0,
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.image, size: 50),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: FlutterFlowIconButton(
+                                    borderColor: Colors.transparent,
+                                    borderRadius: 30.0,
+                                    borderWidth: 1.0,
+                                    buttonSize: 40.0,
+                                    fillColor: FlutterFlowTheme.of(context).primary,
+                                    icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 20.0),
+                                    onPressed: () {
+                                      _showImageSourceSheet(context);
+                                    },
+                                  ),
+                                ),
+                                if (_model.isUploading)
+                                  Container(
+                                    width: 344.0,
+                                    height: 200.0,
+                                    color: Colors.black45,
+                                    child: Center(
+                                      child: CircularProgressIndicator(color: FlutterFlowTheme.of(context).primary),
+                                    ),
+                                  ),
+                              ],
                             ),
                             Container(
                               width: 344.0,
@@ -274,25 +420,30 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 180.0,
-                          height: 40.0,
-                          decoration: BoxDecoration(
-                            color: FlutterFlowTheme.of(context).secondaryBackground,
-                            borderRadius: BorderRadius.circular(8.0),
-                            border: Border.all(
-                              color: FlutterFlowTheme.of(context).primary,
-                              width: 2.0,
+                        InkWell(
+                          onTap: _toggleOptionsCount,
+                          child: Container(
+                            width: 180.0,
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: Border.all(
+                                color: FlutterFlowTheme.of(context).primary,
+                                width: 2.0,
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Nº Opções:', style: FlutterFlowTheme.of(context).bodyMedium),
-                              const SizedBox(width: 8.0),
-                              Text('4', style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold))),
-                            ],
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Nº Opções:', style: FlutterFlowTheme.of(context).bodyMedium),
+                                const SizedBox(width: 8.0),
+                                Text('$_currentOptionsCount', style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold))),
+                                const SizedBox(width: 8.0),
+                                Icon(Icons.sync, size: 16.0, color: FlutterFlowTheme.of(context).primary),
+                              ],
+                            ),
                           ),
                         ),
                         // MOSTRADOR DA PERGUNTA ATUAL
@@ -391,69 +542,167 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               ],
                             ),
                           ),
-                          // RESPOSTA 3 (AZUL)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF99CCFF),
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: const Color(0xFF4E507A), width: 2.0),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: TextFormField(
-                                    controller: _model.textController4,
-                                    focusNode: _model.textFieldFocusNode4,
-                                    textAlign: TextAlign.center,
-                                    decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 3'),
-                                    style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                    maxLines: 2,
-                                    minLines: 1,
+                          if (_currentOptionsCount == 4) ...[
+                            // RESPOSTA 3 (AZUL)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF99CCFF),
+                                borderRadius: BorderRadius.circular(8.0),
+                                border: Border.all(color: const Color(0xFF4E507A), width: 2.0),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: TextFormField(
+                                      controller: _model.textController4,
+                                      focusNode: _model.textFieldFocusNode4,
+                                      textAlign: TextAlign.center,
+                                      decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 3'),
+                                      style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                      maxLines: 2,
+                                      minLines: 1,
+                                    ),
                                   ),
-                                ),
-                                Checkbox(
-                                  value: _model.checkboxValue3 ??= false,
-                                  onChanged: (val) { if (val == true) _setCorrectAnswer(2); },
-                                  activeColor: FlutterFlowTheme.of(context).primaryBackground,
-                                  checkColor: FlutterFlowTheme.of(context).success,
-                                ),
-                              ],
-                            ),
-                          ),
-                          // RESPOSTA 4 (AMARELO)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFEBB2),
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: const Color(0xFFFECF15), width: 2.0),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: TextFormField(
-                                    controller: _model.textController5,
-                                    focusNode: _model.textFieldFocusNode5,
-                                    textAlign: TextAlign.center,
-                                    decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 4'),
-                                    style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                    maxLines: 2,
-                                    minLines: 1,
+                                  Checkbox(
+                                    value: _model.checkboxValue3 ??= false,
+                                    onChanged: (val) { if (val == true) _setCorrectAnswer(2); },
+                                    activeColor: FlutterFlowTheme.of(context).primaryBackground,
+                                    checkColor: FlutterFlowTheme.of(context).success,
                                   ),
-                                ),
-                                Checkbox(
-                                  value: _model.checkboxValue4 ??= false,
-                                  onChanged: (val) { if (val == true) _setCorrectAnswer(3); },
-                                  activeColor: FlutterFlowTheme.of(context).primaryBackground,
-                                  checkColor: FlutterFlowTheme.of(context).success,
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
+                            // RESPOSTA 4 (AMARELO)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFEBB2),
+                                borderRadius: BorderRadius.circular(8.0),
+                                border: Border.all(color: const Color(0xFFFECF15), width: 2.0),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: TextFormField(
+                                      controller: _model.textController5,
+                                      focusNode: _model.textFieldFocusNode5,
+                                      textAlign: TextAlign.center,
+                                      decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 4'),
+                                      style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                      maxLines: 2,
+                                      minLines: 1,
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: _model.checkboxValue4 ??= false,
+                                    onChanged: (val) { if (val == true) _setCorrectAnswer(3); },
+                                    activeColor: FlutterFlowTheme.of(context).primaryBackground,
+                                    checkColor: FlutterFlowTheme.of(context).success,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ],
+                      ),
+                    ),
+                  ),
+
+                  // --- BOTÕES ADICIONAR E REMOVER ---
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(24.0, 8.0, 24.0, 0.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        FFButtonWidget(
+                          onPressed: _removeCurrentQuestion,
+                          text: 'Remover',
+                          icon: const Icon(Icons.delete_outline, size: 15.0),
+                          options: FFButtonOptions(
+                            height: 35.0,
+                            color: FlutterFlowTheme.of(context).error,
+                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.interTight(),
+                                  color: Colors.white,
+                                ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        FFButtonWidget(
+                          onPressed: _addNewQuestion,
+                          text: 'Adicionar',
+                          icon: const Icon(Icons.add, size: 15.0),
+                          options: FFButtonOptions(
+                            height: 35.0,
+                            color: const Color(0xFF6FC073),
+                            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                  font: GoogleFonts.interTight(),
+                                  color: Colors.white,
+                                ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // --- NAVEGADOR DE PÁGINAS (NUMERAÇÃO) ---
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 8.0),
+                    child: SizedBox(
+                      height: 45.0,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _localQuestions.length,
+                        itemBuilder: (context, index) {
+                          bool isCurrent = _currentIndex == index;
+
+                          Color bgColor = isCurrent
+                              ? FlutterFlowTheme.of(context).primary
+                              : FlutterFlowTheme.of(context).secondaryBackground;
+                          
+                          Color borderColor = isCurrent
+                              ? FlutterFlowTheme.of(context).primary
+                              : FlutterFlowTheme.of(context).alternate;
+
+                          Color textColor = isCurrent
+                              ? Colors.white
+                              : FlutterFlowTheme.of(context).primaryText;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: InkWell(
+                              onTap: () {
+                                _saveCurrentToLocal();
+                                setState(() {
+                                  _currentIndex = index;
+                                  _populateUI();
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: Container(
+                                width: 45.0,
+                                height: 45.0,
+                                decoration: BoxDecoration(
+                                  color: bgColor,
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  border: Border.all(color: borderColor, width: 2.0),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${index + 1}',
+                                  style: FlutterFlowTheme.of(context).titleSmall.override(
+                                        font: GoogleFonts.interTight(fontWeight: FontWeight.bold),
+                                        color: textColor,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -533,18 +782,42 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                         try {
                           // 2. Fazer um Batch Update ao Firestore com todas as alterações
                           final batch = FirebaseFirestore.instance.batch();
-                          for (int i = 0; i < _questionDocs.length; i++) {
-                            batch.update(_questionDocs[i].reference, {
+                          
+                          // Apagar as removidas
+                          for (var doc in _deletedDocs) {
+                            batch.delete(doc.reference);
+                          }
+
+                          // Atualizar ou Criar novas
+                          final questionsRef = FirebaseFirestore.instance.collection('quizzes').doc(quizId).collection('questions');
+                          for (int i = 0; i < _localQuestions.length; i++) {
+                            final qData = <String, dynamic>{
                               'question': _localQuestions[i]['question'],
                               'options': _localQuestions[i]['options'],
                               'correctAnswerIndex': _localQuestions[i]['correctAnswerIndex'],
-                            });
+                              'createdAt': FieldValue.serverTimestamp(),
+                            };
+                            if (_localQuestions[i]['imageUrl'] != null) {
+                              qData['imageUrl'] = _localQuestions[i]['imageUrl'];
+                            }
+                            
+                            final docSnap = _questionDocs[i];
+                            if (docSnap != null) {
+                              // Atualiza
+                              qData.remove('createdAt'); // não alterar a ordem original
+                              batch.update(docSnap.reference, qData);
+                            } else {
+                              // Cria nova
+                              final newDocRef = questionsRef.doc();
+                              batch.set(newDocRef, qData);
+                            }
                           }
                           await batch.commit();
 
-                          // 3. Atualizar o Quiz pai para estado "Ready"
+                          // 3. Atualizar o Quiz pai para estado "Ready" e a contagem
                           await FirebaseFirestore.instance.collection('quizzes').doc(quizId).update({
                             'status': 'ready',
+                            'questionCount': _localQuestions.length,
                           });
 
                           if (mounted) {

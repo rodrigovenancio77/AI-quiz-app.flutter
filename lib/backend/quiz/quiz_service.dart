@@ -73,8 +73,8 @@ class QuizService {
     Return ONLY a valid JSON array of objects. Do not include markdown codeblocks, explanations, or any other text.
     Each object must exactly have these keys:
     - "question": a string with the question text
-    - "options": an array of exactly 4 strings for the answer options
-    - "correctAnswerIndex": an integer from 0 to 3 representing the index of the correct option
+    - "options": an array of strings for the answer options. This array MUST contain EITHER exactly 2 OR exactly 4 strings. Try to include a mix of 2-option (true/false or binary) and 4-option questions.
+    - "correctAnswerIndex": an integer representing the index of the correct option (0 or 1 for 2 options; 0 to 3 for 4 options).
     ''';
 
     final aiResponse = await geminiGenerateText(context, aiPrompt);

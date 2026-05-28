@@ -2,9 +2,7 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
@@ -28,11 +26,17 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
   late EditarPerfilModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isGoogleUser = false;
 
   @override
   void initState() {
     super.initState();
     _model = createModel(context, () => EditarPerfilModel());
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _isGoogleUser = user.providerData.any((provider) => provider.providerId == 'google.com');
+    }
 
     _model.textController1 ??= TextEditingController(text: currentUserDisplayName);
     _model.textFieldFocusNode1 ??= FocusNode();
@@ -211,6 +215,8 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                       TextFormField(
                         controller: _model.textController2,
                         focusNode: _model.textFieldFocusNode2,
+                        readOnly: _isGoogleUser,
+                        enabled: !_isGoogleUser,
                         decoration: _buildInputDecoration(context, 'Endereço de Email', Icons.alternate_email),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
                         keyboardType: TextInputType.emailAddress,
@@ -218,33 +224,37 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                       ),
                       const SizedBox(height: 12.0),
 
-                      TextFormField(
-                        controller: _model.textController3,
-                        focusNode: _model.textFieldFocusNode3,
-                        obscureText: !_model.passwordVisibility1,
-                        decoration: _buildPasswordDecoration(
-                          context, 
-                          'Nova Palavra-Passe', 
-                          _model.passwordVisibility1, 
-                          () => setState(() => _model.passwordVisibility1 = !_model.passwordVisibility1)
+                      if (!_isGoogleUser) ...[
+                        TextFormField(
+                          controller: _model.textController3,
+                          focusNode: _model.textFieldFocusNode3,
+                          obscureText: !_model.passwordVisibility1,
+                          decoration: _buildPasswordDecoration(
+                            context, 
+                            'Nova Palavra-Passe', 
+                            _model.passwordVisibility1, 
+                            () => setState(() => _model.passwordVisibility1 = !_model.passwordVisibility1)
+                          ),
+                          style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
                         ),
-                        style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
-                      ),
-                      const SizedBox(height: 12.0),
+                        const SizedBox(height: 12.0),
 
-                      TextFormField(
-                        controller: _model.textController4,
-                        focusNode: _model.textFieldFocusNode4,
-                        obscureText: !_model.passwordVisibility2,
-                        decoration: _buildPasswordDecoration(
-                          context, 
-                          'Confirmar Nova Palavra-Passe', 
-                          _model.passwordVisibility2, 
-                          () => setState(() => _model.passwordVisibility2 = !_model.passwordVisibility2)
+                        TextFormField(
+                          controller: _model.textController4,
+                          focusNode: _model.textFieldFocusNode4,
+                          obscureText: !_model.passwordVisibility2,
+                          decoration: _buildPasswordDecoration(
+                            context, 
+                            'Confirmar Nova Palavra-Passe', 
+                            _model.passwordVisibility2, 
+                            () => setState(() => _model.passwordVisibility2 = !_model.passwordVisibility2)
+                          ),
+                          style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
                         ),
-                        style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
-                      ),
-                      const SizedBox(height: 24.0),
+                        const SizedBox(height: 24.0),
+                      ] else ...[
+                        const SizedBox(height: 12.0),
+                      ],
                       
                       Row(
                         mainAxisSize: MainAxisSize.max,

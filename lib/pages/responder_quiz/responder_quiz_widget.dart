@@ -86,7 +86,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
           .orderBy('createdAt')
           .get();
 
-      _questions = qSnap.docs.map((d) => d.data() as Map<String, dynamic>).toList();
+      _questions = qSnap.docs.map((d) => d.data()).toList();
 
     } catch (e) {
       print('Erro ao carregar o quiz para jogar: $e');
@@ -198,7 +198,18 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.only(topLeft: Radius.circular(8.0), topRight: Radius.circular(8.0)),
-                      child: Image.network('https://picsum.photos/seed/$quizId/600', width: 344.0, height: 200.0, fit: BoxFit.cover),
+                      child: Image.network(
+                        currentQ['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600', 
+                        width: 344.0, 
+                        height: 200.0, 
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 344.0,
+                          height: 200.0,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image, size: 50),
+                        ),
+                      ),
                     ),
                     Container(
                       width: 344.0,
@@ -294,8 +305,10 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                     children: [
                       _buildOptionButton(0, options.isNotEmpty ? options[0] : '', const Color(0xFFF5C4C6), const Color(0xFFFC8883)),
                       _buildOptionButton(1, options.length > 1 ? options[1] : '', const Color(0xFFC3FFB2), const Color(0xFF31AB31)),
-                      _buildOptionButton(2, options.length > 2 ? options[2] : '', const Color(0xFF99CCFF), const Color(0xFF4E507A)),
-                      _buildOptionButton(3, options.length > 3 ? options[3] : '', const Color(0xFFFFEBB2), const Color(0xFFFECF15)),
+                      if (options.length > 2)
+                        _buildOptionButton(2, options[2], const Color(0xFF99CCFF), const Color(0xFF4E507A)),
+                      if (options.length > 3)
+                        _buildOptionButton(3, options[3], const Color(0xFFFFEBB2), const Color(0xFFFECF15)),
                     ],
                   ),
                 ),
