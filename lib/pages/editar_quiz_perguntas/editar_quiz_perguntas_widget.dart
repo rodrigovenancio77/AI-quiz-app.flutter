@@ -133,7 +133,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
           .orderBy('createdAt') // Ordenar pela ordem de criação
           .get();
 
-      _questionDocs = snap.docs;
+      _questionDocs = List<DocumentSnapshot?>.from(snap.docs);
       _localQuestions = snap.docs.map((d) => d.data()).toList();
 
       if (_localQuestions.isNotEmpty) {
@@ -433,8 +433,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                                         : 'https://picsum.photos/seed/${quizId ?? '0'}_${_currentIndex}/600',
                                     width: 344.0,
                                     height: 200.0,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
+                                    fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(
                                       width: 344.0,
                                       height: 200.0,
                                       color: Colors.grey[300],
@@ -833,6 +832,25 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                       onPressed: () async {
                         // 1. Guardar a última pergunta editada
                         _saveCurrentToLocal();
+
+                        bool hasEmptyFields = false;
+                        for (var q in _localQuestions) {
+                          if (q['question'].toString().trim().isEmpty) {
+                            hasEmptyFields = true;
+                            break;
+                          }
+                          List options = q['options'] as List;
+                          if (options.any((opt) => opt.toString().trim().isEmpty)) {
+                            hasEmptyFields = true;
+                            break;
+                          }
+                        }
+
+                        if (hasEmptyFields) {
+                          showSnackbar(context, 'Não pode haver perguntas ou opções de resposta vazias.');
+                          return;
+                        }
+
                         setState(() => _isLoading = true);
 
                         try {

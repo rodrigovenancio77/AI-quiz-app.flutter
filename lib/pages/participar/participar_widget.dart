@@ -302,8 +302,7 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                                       imageUrl,
                                       width: 100.0,
                                       height: 100.0,
-                                      fit: BoxFit.cover,
-                                    ),
+                                      fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 100.0, height: 100.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 50, color: Colors.grey))),
                                   ),
                                   Expanded(
                                     child: Padding(

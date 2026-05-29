@@ -102,8 +102,7 @@ class _AddQuizWidgetState extends State<AddQuizWidget> {
                         'assets/images/idea_6368837.png',
                         width: 100.0,
                         height: 100.0,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
+                        fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Icon(
                           Icons.lightbulb_outline_rounded,
                           size: 80.0,
                           color: FlutterFlowTheme.of(context).primary,

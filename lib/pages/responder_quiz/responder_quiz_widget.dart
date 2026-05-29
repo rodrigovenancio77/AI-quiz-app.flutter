@@ -285,8 +285,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                         currentQ['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600', 
                         width: 344.0, 
                         height: 200.0, 
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(
                           width: 344.0,
                           height: 200.0,
                           color: Colors.grey[300],

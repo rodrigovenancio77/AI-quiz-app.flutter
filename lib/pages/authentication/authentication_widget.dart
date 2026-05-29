@@ -856,8 +856,8 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                               ),
                                               filled: true,
                                               fillColor: Colors.white,
-                                              suffixIcon: const FaIcon(
-                                                FontAwesomeIcons.pencilAlt,
+                                              suffixIcon: const Icon(
+                                                Icons.person_outline,
                                                 color: Color(0xFFAAAEB8),
                                                 size: 20.0,
                                               ),

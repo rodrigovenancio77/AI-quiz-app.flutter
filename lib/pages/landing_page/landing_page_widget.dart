@@ -842,8 +842,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                               'https://picsum.photos/seed/458/600',
                               width: 62.0,
                               height: 62.0,
-                              fit: BoxFit.cover,
-                            ),
+                              fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 62.0, height: 62.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                           ),
                         ),
                         Align(
@@ -854,8 +853,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                               'https://picsum.photos/seed/458/600',
                               width: 62.0,
                               height: 62.0,
-                              fit: BoxFit.cover,
-                            ),
+                              fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 62.0, height: 62.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                           ),
                         ),
                         Align(
@@ -866,8 +864,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                               'https://picsum.photos/seed/458/600',
                               width: 62.0,
                               height: 62.0,
-                              fit: BoxFit.cover,
-                            ),
+                              fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 62.0, height: 62.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                           ),
                         ),
                         Align(
@@ -878,8 +875,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                               'https://picsum.photos/seed/458/600',
                               width: 62.0,
                               height: 62.0,
-                              fit: BoxFit.cover,
-                            ),
+                              fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 62.0, height: 62.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                           ),
                         ),
                         Align(
@@ -890,8 +886,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                               'https://picsum.photos/seed/458/600',
                               width: 62.0,
                               height: 62.0,
-                              fit: BoxFit.cover,
-                            ),
+                              fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 62.0, height: 62.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                           ),
                         ),
                         Align(

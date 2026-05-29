@@ -236,7 +236,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(8.0)), 
-                child: Image.network(imageUrl, fit: BoxFit.cover)
+                child: Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: double.infinity, height: double.infinity, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 50, color: Colors.grey)))
               )
             ),
             Container(

@@ -166,8 +166,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                                     currentUserPhoto.isNotEmpty ? currentUserPhoto : 'https://picsum.photos/seed/user/200',
                                     width: 120.0,
                                     height: 120.0,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
+                                    fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
                                       return Container(
                                         color: FlutterFlowTheme.of(context).alternate,
                                         child: Icon(Icons.person, color: FlutterFlowTheme.of(context).secondaryText, size: 60.0),

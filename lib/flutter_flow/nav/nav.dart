@@ -75,8 +75,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
-      navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
+      navigatorKey: appNavigatorKey, errorBuilder: (context, state) =>
           appStateNotifier.loggedIn ? NavBarPage() : const AuthenticationWidget(),
       routes: [
         FFRoute(

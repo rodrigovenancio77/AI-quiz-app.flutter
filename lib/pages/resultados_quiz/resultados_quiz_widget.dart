@@ -148,8 +148,7 @@ class _ResultadosQuizWidgetState extends State<ResultadosQuizWidget> {
                                   clipBehavior: Clip.antiAlias,
                                   child: Image.network(
                                     photo.isNotEmpty ? photo : 'https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NTYyMDF8MHwxfHNlYXJjaHw2fHxwcm9mZXNzb3J8ZW58MHx8fHwxNzc3MjM5ODQ3fDA&ixlib=rb-4.1.0&q=80&w=400',
-                                    fit: BoxFit.cover,
-                                  ),
+                                    fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(width: 50.0, height: 50.0, color: Colors.grey[300], child: const Icon(Icons.broken_image, size: 30, color: Colors.grey))),
                                 ),
                                 const SizedBox(width: 16.0),
                                 

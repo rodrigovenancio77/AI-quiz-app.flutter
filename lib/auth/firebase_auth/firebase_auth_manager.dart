@@ -317,6 +317,13 @@ class FirebaseAuthManager extends AuthManager
         SnackBar(content: Text(errorMsg)),
       );
       return null;
+    } catch (e, stackTrace) {
+      print('Error during sign in: $e\n$stackTrace');
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error during sign in: $e')),
+      );
+      return null;
     }
   }
 }

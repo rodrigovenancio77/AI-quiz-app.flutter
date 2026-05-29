@@ -129,8 +129,7 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                         imageUrl,
                         width: double.infinity,
                         height: 200.0,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(
                           width: double.infinity,
                           height: 200.0,
                           color: Colors.grey,

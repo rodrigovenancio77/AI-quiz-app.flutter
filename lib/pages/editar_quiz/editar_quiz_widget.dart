@@ -180,8 +180,7 @@ class _EditarQuizWidgetState extends State<EditarQuizWidget> {
                                          quizData?['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '762'}/600',
                                          width: 344.0,
                                          height: 200.0,
-                                         fit: BoxFit.cover,
-                                         errorBuilder: (context, error, stackTrace) => Container(
+                                         fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => Container(
                                            width: 344.0,
                                            height: 200.0,
                                            color: Colors.grey[300],
