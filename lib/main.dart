@@ -151,10 +151,10 @@ class _NavBarPageState extends State<NavBarPage> {
   @override
   Widget build(BuildContext context) {
     final tabs = {
-      'Dashboard': const DashboardWidget(),
-      'Participar': const ParticiparWidget(),
-      'UserQuizzes': const UserQuizzesWidget(),
-      'EditarPerfil': const EditarPerfilWidget(),
+      'Dashboard': DashboardWidget(),
+      'Participar': ParticiparWidget(),
+      'UserQuizzes': UserQuizzesWidget(),
+      'EditarPerfil': EditarPerfilWidget(),
     };
     final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
 

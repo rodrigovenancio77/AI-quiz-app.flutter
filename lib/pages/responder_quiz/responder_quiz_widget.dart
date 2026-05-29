@@ -155,6 +155,89 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
     }
   }
 
+  void _showQuestionsPopup() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+          ),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: IconButton(
+                  icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              const Text(
+                'Perguntas',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: [
+                  ...List.generate(_questions.length, (index) {
+                    final isActive = index == _currentIndex;
+                    final isAnswered = _userAnswers.containsKey(index);
+                    
+                    Color bgColor;
+                    if (isActive) {
+                      bgColor = const Color(0xFF42436F);
+                    } else if (isAnswered) {
+                      bgColor = const Color(0xFF6FC073);
+                    } else {
+                      bgColor = Colors.white;
+                    }
+
+                    Color textColor = (isActive || isAnswered) ? Colors.white : const Color(0xFF42436F);
+                    Color borderColor = isActive ? const Color(0xFF42436F) : (isAnswered ? const Color(0xFF6FC073) : const Color(0xFF42436F));
+
+                    return InkWell(
+                      onTap: () {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: 45,
+                        height: 45,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          border: Border.all(color: borderColor),
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _model.dispose();
@@ -314,106 +397,71 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                 ),
               ),
 
-              // --- NAVEGADOR DE PÁGINAS (NUMERAÇÃO) ---
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 8.0),
-                child: SizedBox(
-                  height: 45.0,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _questions.length,
-                    itemBuilder: (context, index) {
-                      bool isCurrent = _currentIndex == index;
-                      bool isAnswered = _userAnswers.containsKey(index);
-
-                      // Definição das cores dinâmicas baseadas no estado da pergunta
-                      Color bgColor = isCurrent
-                          ? FlutterFlowTheme.of(context).primary
-                          : isAnswered
-                              ? const Color(0xFF6FC073) // Verde para perguntas já respondidas
-                              : FlutterFlowTheme.of(context).secondaryBackground; // Cinza para perguntas por responder
-                      
-                      Color borderColor = isCurrent
-                          ? FlutterFlowTheme.of(context).primary
-                          : isAnswered
-                              ? const Color(0xFF6FC073)
-                              : FlutterFlowTheme.of(context).alternate;
-
-                      Color textColor = (isCurrent || isAnswered)
-                          ? Colors.white
-                          : FlutterFlowTheme.of(context).primaryText;
-
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: InkWell(
-                          onTap: () => setState(() => _currentIndex = index),
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Container(
-                            width: 45.0,
-                            height: 45.0,
-                            decoration: BoxDecoration(
-                              color: bgColor,
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: borderColor, width: 2.0),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '${index + 1}',
-                              style: FlutterFlowTheme.of(context).titleSmall.override(
-                                    font: GoogleFonts.interTight(fontWeight: FontWeight.bold),
-                                    color: textColor,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-              // --- NAVEGAÇÃO (ANTERIOR / PRÓXIMA) ---
+              // --- NAVEGADOR DE PERGUNTAS (POP-UP e Setas) ---
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(24.0, 8.0, 24.0, 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    FFButtonWidget(
-                      onPressed: _currentIndex > 0
+                    // Botão Anterior
+                    InkWell(
+                      onTap: _currentIndex > 0
                           ? () => setState(() => _currentIndex--)
                           : null,
-                      text: 'Anterior',
-                      icon: const Icon(Icons.arrow_back, size: 15.0),
-                      options: FFButtonOptions(
-                        width: 150.0,
+                      child: Container(
+                        width: 50.0,
                         height: 40.0,
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                              font: GoogleFonts.interTight(),
-                              color: FlutterFlowTheme.of(context).alternate,
-                            ),
-                        borderSide: BorderSide(color: FlutterFlowTheme.of(context).alternate),
-                        borderRadius: BorderRadius.circular(8.0),
-                        disabledColor: const Color(0xFFD0D0D0),
+                        decoration: BoxDecoration(
+                          color: _currentIndex > 0 ? FlutterFlowTheme.of(context).secondaryBackground : const Color(0xFFE0E0E0),
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: _currentIndex > 0 ? FlutterFlowTheme.of(context).alternate : Colors.transparent),
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_left,
+                          color: _currentIndex > 0 ? FlutterFlowTheme.of(context).alternate : Colors.grey,
+                        ),
                       ),
                     ),
-                    FFButtonWidget(
-                      onPressed: _currentIndex < _questions.length - 1
+                    
+                    // Botão Pop-up
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: InkWell(
+                          onTap: () => _showQuestionsPopup(),
+                          child: Container(
+                            height: 40.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context).secondaryBackground,
+                              borderRadius: BorderRadius.circular(8.0),
+                              border: Border.all(color: FlutterFlowTheme.of(context).alternate),
+                            ),
+                            child: Icon(
+                              Icons.keyboard_arrow_up,
+                              color: FlutterFlowTheme.of(context).alternate,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Botão Próxima
+                    InkWell(
+                      onTap: _currentIndex < _questions.length - 1
                           ? () => setState(() => _currentIndex++)
                           : null,
-                      text: 'Próxima',
-                      icon: const Icon(Icons.arrow_forward, size: 15.0),
-                      options: FFButtonOptions(
-                        width: 150.0,
+                      child: Container(
+                        width: 50.0,
                         height: 40.0,
-                        iconAlignment: IconAlignment.end,
-                        color: FlutterFlowTheme.of(context).primary,
-                        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                              font: GoogleFonts.interTight(),
-                              color: Colors.white,
-                            ),
-                        borderRadius: BorderRadius.circular(8.0),
-                        disabledColor: const Color(0xFFD0D0D0),
+                        decoration: BoxDecoration(
+                          color: _currentIndex < _questions.length - 1 ? FlutterFlowTheme.of(context).primary : const Color(0xFFE0E0E0),
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: _currentIndex < _questions.length - 1 ? FlutterFlowTheme.of(context).primary : Colors.transparent),
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_right,
+                          color: _currentIndex < _questions.length - 1 ? Colors.white : Colors.grey,
+                        ),
                       ),
                     ),
                   ],

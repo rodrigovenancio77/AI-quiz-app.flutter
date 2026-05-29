@@ -59,7 +59,7 @@ class DesafIAFirebaseUser extends BaseAuthUser {
 }
 
 Stream<BaseAuthUser> desafIAFirebaseUserStream() => FirebaseAuth.instance
-        .authStateChanges()
+        .userChanges()
         .debounce((user) => user == null && !loggedIn
             ? TimerStream(true, const Duration(seconds: 1))
             : Stream.value(user))

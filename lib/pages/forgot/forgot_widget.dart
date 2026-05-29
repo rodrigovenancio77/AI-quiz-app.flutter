@@ -4,6 +4,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '/auth/firebase_auth/auth_util.dart';
 import 'forgot_model.dart';
 export 'forgot_model.dart';
 
@@ -236,10 +237,26 @@ class _ForgotWidgetState extends State<ForgotWidget> {
                       ),
                     ),
                     FFButtonWidget(
-                      onPressed: () {
-                        print('Button pressed ...');
+                      onPressed: () async {
+                        if (_model.textController!.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Por favor, insira o seu email.',
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        await authManager.resetPassword(
+                          email: _model.textController!.text.trim(),
+                          context: context,
+                        );
+                        if (context.mounted) {
+                          context.pop();
+                        }
                       },
-                      text: 'Enviar email de recuperação\n',
+                      text: 'Enviar email de recuperação',
                       options: FFButtonOptions(
                         width: 342.0,
                         height: 46.0,

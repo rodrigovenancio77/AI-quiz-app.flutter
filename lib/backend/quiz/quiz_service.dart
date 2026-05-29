@@ -69,12 +69,13 @@ class QuizService {
 
     // 2. Prompt Gemini for structured JSON questions
     final aiPrompt = '''
-    Create a quiz about "${parsed.topic}" with ${parsed.questionCount} multiple-choice questions.
-    Return ONLY a valid JSON array of objects. Do not include markdown codeblocks, explanations, or any other text.
-    Each object must exactly have these keys:
-    - "question": a string with the question text
-    - "options": an array of strings for the answer options. This array MUST contain EITHER exactly 2 OR exactly 4 strings. Try to include a mix of 2-option (true/false or binary) and 4-option questions.
-    - "correctAnswerIndex": an integer representing the index of the correct option (0 or 1 for 2 options; 0 to 3 for 4 options).
+    Cria um quiz sobre o tema "${parsed.topic}" com ${parsed.questionCount} perguntas de escolha múltipla.
+    Todo o conteúdo gerado (perguntas e opções de resposta) DEVE estar OBRIGATORIAMENTE em Português de Portugal (pt-pt).
+    Devolve APENAS um array JSON válido de objetos. Não incluas blocos de código markdown, explicações, ou qualquer outro texto.
+    Cada objeto deve ter exatamente estas chaves:
+    - "question": uma string com o texto da pergunta em pt-pt
+    - "options": um array de strings com as opções de resposta em pt-pt. Este array DEVE conter EXATAMENTE 2 OU EXATAMENTE 4 strings. Tenta incluir uma mistura de perguntas com 2 opções (verdadeiro/falso ou binárias) e com 4 opções.
+    - "correctAnswerIndex": um número inteiro que representa o índice da opção correta (0 ou 1 para 2 opções; 0 a 3 para 4 opções).
     ''';
 
     final aiResponse = await geminiGenerateText(context, aiPrompt);

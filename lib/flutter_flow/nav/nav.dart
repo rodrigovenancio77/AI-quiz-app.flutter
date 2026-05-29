@@ -353,6 +353,11 @@ class FFRoute {
             // MUDA DE '/landingPage' PARA '/authentication'
             return '/authentication'; 
           }
+
+          if (appStateNotifier.loggedIn && state.uri.path == '/authentication') {
+            return '/';
+          }
+          
           return null;
         },
         pageBuilder: (context, state) {

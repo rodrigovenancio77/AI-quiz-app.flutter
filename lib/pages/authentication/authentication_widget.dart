@@ -532,89 +532,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                       ].divide(const SizedBox(height: 10.0)),
                                     ),
                                   ),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Align(
-                                        alignment:
-                                            const AlignmentDirectional(-0.9, 0.0),
-                                        child: Theme(
-                                          data: ThemeData(
-                                            checkboxTheme: CheckboxThemeData(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(4.0),
-                                              ),
-                                            ),
-                                            unselectedWidgetColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .alternate,
-                                          ),
-                                          child: Checkbox(
-                                            value: _model.checkboxValue ??=
-                                                true,
-                                            onChanged: (newValue) async {
-                                              safeSetState(() => _model
-                                                  .checkboxValue = newValue!);
-                                            },
-                                            side: (FlutterFlowTheme.of(context)
-                                                        .alternate !=
-                                                    null)
-                                                ? BorderSide(
-                                                    width: 2,
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .alternate,
-                                                  )
-                                                : null,
-                                            activeColor: const Color(0xFF42436F),
-                                            checkColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .info,
-                                          ),
-                                        ),
-                                      ),
-                                      Align(
-                                        alignment:
-                                            const AlignmentDirectional(0.0, -1.0),
-                                        child: Text(
-                                          ' Lembrar-me da palavra-passe',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                font: GoogleFonts.inter(
-                                                  fontWeight:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontWeight,
-                                                  fontStyle:
-                                                      FlutterFlowTheme.of(
-                                                              context)
-                                                          .bodyMedium
-                                                          .fontStyle,
-                                                ),
-                                                letterSpacing: 0.0,
-                                                fontWeight:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontWeight,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .bodyMedium
-                                                        .fontStyle,
-                                              ),
-                                        ),
-                                      ),
-                                    ]
-                                        .divide(const SizedBox(width: 10.0))
-                                        .addToStart(const SizedBox(width: 20.0)),
-                                  ),
+
                                   Align(
                                     alignment: const AlignmentDirectional(-0.73, 0.0),
                                     child: InkWell(
@@ -669,7 +587,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                       }
                                       
                                       // 3. Navegar para a página inicial (Dashboard)
-                                      context.go('/'); 
+                                      context.goNamed('Dashboard'); 
                                     },
                                     text: 'Iniciar Sessão',
                                     options: FFButtonOptions(
@@ -735,7 +653,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                       if (user == null) {
                                         return;
                                       }
-                                      context.go('/');
+                                      context.goNamed('Dashboard');
                                     },
                                     text: 'Iniciar sessão com o Google',
                                     icon: const FaIcon(
@@ -1496,7 +1414,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                         await FirebaseAuth.instance.currentUser?.updateDisplayName(_model.textController3!.text);
                                         
                                         // 5. Navegar para o Dashboard
-                                        if (context.mounted) context.go('/');
+                                        if (context.mounted) context.goNamed('Dashboard');
                                       }
                                     },
                                     text: 'Criar Conta',
