@@ -1,4 +1,4 @@
-
+import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'firebase_auth_manager.dart';
@@ -7,6 +7,14 @@ export 'firebase_auth_manager.dart';
 
 final _authManager = FirebaseAuthManager();
 FirebaseAuthManager get authManager => _authManager;
+
+Future<bool> updateEmail(
+        {required String email, required BuildContext context}) =>
+    _authManager.updateEmail(email: email, context: context);
+
+Future<bool> updatePassword(
+        {required String newPassword, required BuildContext context}) =>
+    _authManager.updatePassword(newPassword: newPassword, context: context);
 
 String get currentUserEmail => currentUser?.email ?? '';
 

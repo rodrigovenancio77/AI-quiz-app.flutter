@@ -412,17 +412,30 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
 
         // 3. Atualizar Email
         if (_model.textController2!.text.isNotEmpty && _model.textController2!.text != currentUserEmail) {
-          await authManager.updateEmail(email: _model.textController2!.text, context: context);
-          updated = true;
+          bool emailSuccess = await authManager.updateEmail(email: _model.textController2!.text, context: context);
+          if (emailSuccess) {
+            updated = true;
+          } else {
+            setState(() => _model.isUploading = false);
+            return;
+          }
         }
+
+        bool passwordChanged = false;
 
         // 4. Atualizar Password
         if (_model.textController3!.text.isNotEmpty) {
           if (_model.textController3!.text == _model.textController4!.text) {
-            await authManager.updatePassword(newPassword: _model.textController3!.text, context: context);
-            updated = true;
-            _model.textController3!.clear();
-            _model.textController4!.clear();
+            bool passSuccess = await authManager.updatePassword(newPassword: _model.textController3!.text, context: context);
+            if (passSuccess) {
+              updated = true;
+              passwordChanged = true;
+              _model.textController3!.clear();
+              _model.textController4!.clear();
+            } else {
+              setState(() => _model.isUploading = false);
+              return;
+            }
           } else {
             if (mounted) showSnackbar(context, 'As palavras-passe não coincidem.');
             setState(() => _model.isUploading = false);
@@ -436,9 +449,12 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
         }
 
         if (mounted) {
-          if (updated) {
+          if (passwordChanged) {
+            showSnackbar(context, 'Palavra-passe alterada. Inicia sessão novamente.');
+            await authManager.signOut();
+            context.go('/authentication');
+          } else if (updated) {
             showSnackbar(context, 'Perfil atualizado com sucesso!');
-            // --- CORREÇÃO DO GOERROR AQUI ---
             if (context.canPop()) {
               context.pop();
             } else {

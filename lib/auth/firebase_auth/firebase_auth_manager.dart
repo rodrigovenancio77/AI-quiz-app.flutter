@@ -79,46 +79,60 @@ class FirebaseAuthManager extends AuthManager
   }
 
   @override
-  Future updateEmail({
+  Future<bool> updateEmail({
     required String email,
     required BuildContext context,
   }) async {
     try {
       if (!loggedIn) {
         print('Error: update email attempted with no logged in user!');
-        return;
+        return false;
       }
       await currentUser?.updateEmail(email);
+      return true;
     } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (e.code == 'requires-recent-login') {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text(
-                  'Too long since most recent sign in. Sign in again before updating your email.')),
+                  'Sessão expirada. Volta a iniciar sessão antes de atualizar o teu email.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao atualizar email: ${e.message}')),
         );
       }
+      return false;
     }
   }
 
   @override
-  Future updatePassword({
+  Future<bool> updatePassword({
     required String newPassword,
     required BuildContext context,
   }) async {
     try {
       if (!loggedIn) {
         print('Error: update password attempted with no logged in user!');
-        return;
+        return false;
       }
       await currentUser?.updatePassword(newPassword);
+      return true;
     } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
       if (e.code == 'requires-recent-login') {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.message!}')),
+          const SnackBar(
+            content: Text('Sessão expirada. Volta a iniciar sessão antes de atualizar a tua palavra-passe.')
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao atualizar palavra-passe: ${e.message}')),
         );
       }
+      return false;
     }
   }
 
