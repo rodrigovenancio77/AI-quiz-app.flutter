@@ -29,6 +29,11 @@ class EditarQuizPerguntasWidget extends StatefulWidget {
 
 class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
   late EditarQuizPerguntasModel _model;
+  final ScrollController _questionScrollController = ScrollController();
+  final ScrollController _opt1ScrollController = ScrollController();
+  final ScrollController _opt2ScrollController = ScrollController();
+  final ScrollController _opt3ScrollController = ScrollController();
+  final ScrollController _opt4ScrollController = ScrollController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   // VARIÁVEIS DE ESTADO PARA O FIREBASE
@@ -353,6 +358,11 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
 
   @override
   void dispose() {
+    _questionScrollController.dispose();
+    _opt1ScrollController.dispose();
+    _opt2ScrollController.dispose();
+    _opt3ScrollController.dispose();
+    _opt4ScrollController.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -411,14 +421,10 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                 children: [
                   // --- IMAGEM E CAIXA DA PERGUNTA ---
                   Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 8.0),
-                    child: Row(
+                    padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 8.0),
+                    child: Column(
                       mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
                             Stack(
                               alignment: Alignment.bottomRight,
                               children: [
@@ -431,11 +437,11 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                                     (_localQuestions.isNotEmpty && _localQuestions[_currentIndex]['imageUrl'] != null) 
                                         ? _localQuestions[_currentIndex]['imageUrl'] 
                                         : 'https://picsum.photos/seed/${quizId ?? '0'}_${_currentIndex}/600',
-                                    width: 344.0,
+                                    width: double.infinity,
                                     height: 200.0,
                                     fit: BoxFit.cover,
                                     errorBuilder: (context, error, stackTrace) => Container(
-                                      width: 344.0,
+                                      width: double.infinity,
                                       height: 200.0,
                                       color: Colors.grey[300],
                                       child: const Icon(Icons.image, size: 50),
@@ -458,7 +464,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                                 ),
                                 if (_model.isUploading)
                                   Container(
-                                    width: 344.0,
+                                    width: double.infinity,
                                     height: 200.0,
                                     color: Colors.black45,
                                     child: Center(
@@ -468,7 +474,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               ],
                             ),
                             Container(
-                              width: 344.0,
+                              width: double.infinity,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context).primary,
                                 borderRadius: const BorderRadius.only(
@@ -478,10 +484,15 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: TextFormField(
-                                  controller: _model.textController1,
-                                  focusNode: _model.textFieldFocusNode1,
-                                  decoration: InputDecoration(
+                                child: Scrollbar(
+                                  controller: _questionScrollController,
+                                  thumbVisibility: true,
+                                  child: TextFormField(
+                                    scrollController: _questionScrollController,
+                                    controller: _model.textController1,
+                                    focusNode: _model.textFieldFocusNode1,
+                                    textAlign: TextAlign.start,
+                                    decoration: InputDecoration(
                                     isDense: true,
                                     hintText: 'Escreve a pergunta aqui...',
                                     hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
@@ -499,12 +510,11 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                                   maxLines: 3,
                                   minLines: 1,
                                 ),
+                                ),
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
                   ),
                   
                   // --- BARRA INTERMÉDIA (Nº de Opções e Indicador de Pergunta) ---
@@ -576,26 +586,34 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                             childAspectRatio: 1.0,
                           ),
                           children: [
-                          // RESPOSTA 1 (VERMELHO)
+                          // RESPOSTA 1 (VERMELHO/VERDE)
                           Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF5C4C6),
+                              color: _currentOptionsCount == 2 ? const Color(0xFFC3FFB2) : const Color(0xFFF5C4C6),
                               borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: const Color(0xFFFC8883), width: 2.0),
+                              border: Border.all(color: _currentOptionsCount == 2 ? const Color(0xFF31AB31) : const Color(0xFFFC8883), width: 2.0),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: TextFormField(
-                                    controller: _model.textController2,
-                                    focusNode: _model.textFieldFocusNode2,
-                                    textAlign: TextAlign.center,
-                                    decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 1'),
-                                    style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                    maxLines: 2,
-                                    minLines: 1,
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Scrollbar(
+                                      controller: _opt1ScrollController,
+                                      thumbVisibility: true,
+                                      child: TextFormField(
+                                        scrollController: _opt1ScrollController,
+                                        controller: _model.textController2,
+                                        focusNode: _model.textFieldFocusNode2,
+                                        textAlign: TextAlign.center,
+                                        textAlignVertical: TextAlignVertical.center,
+                                        decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 1'),
+                                        style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                        maxLines: null,
+                                        expands: true,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 Checkbox(
@@ -607,26 +625,34 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               ],
                             ),
                           ),
-                          // RESPOSTA 2 (VERDE)
+                          // RESPOSTA 2 (VERDE/VERMELHO)
                           Container(
                             decoration: BoxDecoration(
-                              color: const Color(0xFFC3FFB2),
+                              color: _currentOptionsCount == 2 ? const Color(0xFFF5C4C6) : const Color(0xFFC3FFB2),
                               borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(color: const Color(0xFF31AB31), width: 2.0),
+                              border: Border.all(color: _currentOptionsCount == 2 ? const Color(0xFFFC8883) : const Color(0xFF31AB31), width: 2.0),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                  child: TextFormField(
-                                    controller: _model.textController3,
-                                    focusNode: _model.textFieldFocusNode3,
-                                    textAlign: TextAlign.center,
-                                    decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 2'),
-                                    style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                    maxLines: 2,
-                                    minLines: 1,
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Scrollbar(
+                                      controller: _opt2ScrollController,
+                                      thumbVisibility: true,
+                                      child: TextFormField(
+                                        scrollController: _opt2ScrollController,
+                                        controller: _model.textController3,
+                                        focusNode: _model.textFieldFocusNode3,
+                                        textAlign: TextAlign.center,
+                                        textAlignVertical: TextAlignVertical.center,
+                                        decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 2'),
+                                        style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                        maxLines: null,
+                                        expands: true,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 Checkbox(
@@ -649,16 +675,24 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: TextFormField(
-                                      controller: _model.textController4,
-                                      focusNode: _model.textFieldFocusNode4,
-                                      textAlign: TextAlign.center,
-                                      decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 3'),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                      maxLines: 2,
-                                      minLines: 1,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Scrollbar(
+                                        controller: _opt3ScrollController,
+                                        thumbVisibility: true,
+                                        child: TextFormField(
+                                          scrollController: _opt3ScrollController,
+                                          controller: _model.textController4,
+                                          focusNode: _model.textFieldFocusNode4,
+                                          textAlign: TextAlign.center,
+                                          textAlignVertical: TextAlignVertical.center,
+                                          decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 3'),
+                                          style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                          maxLines: null,
+                                          expands: true,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   Checkbox(
@@ -680,16 +714,24 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: TextFormField(
-                                      controller: _model.textController5,
-                                      focusNode: _model.textFieldFocusNode5,
-                                      textAlign: TextAlign.center,
-                                      decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 4'),
-                                      style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                                      maxLines: 2,
-                                      minLines: 1,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                      child: Scrollbar(
+                                        controller: _opt4ScrollController,
+                                        thumbVisibility: true,
+                                        child: TextFormField(
+                                          scrollController: _opt4ScrollController,
+                                          controller: _model.textController5,
+                                          focusNode: _model.textFieldFocusNode5,
+                                          textAlign: TextAlign.center,
+                                          textAlignVertical: TextAlignVertical.center,
+                                          decoration: const InputDecoration(border: InputBorder.none, hintText: 'Opção 4'),
+                                          style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                                          maxLines: null,
+                                          expands: true,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   Checkbox(

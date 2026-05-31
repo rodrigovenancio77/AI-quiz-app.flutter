@@ -88,7 +88,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
               size: 30.0,
             ),
             onPressed: () async {
-              context.pop();
+              context.goNamed('LandingPage');
             },
           ),
           actions: const [],
@@ -868,8 +868,8 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                               ),
                                               filled: true,
                                               fillColor: Colors.white,
-                                              suffixIcon: const FaIcon(
-                                                FontAwesomeIcons.pencilAlt,
+                                              suffixIcon: const Icon(
+                                                Icons.edit,
                                                 color: Color(0xFFAAAEB8),
                                                 size: 20.0,
                                               ),

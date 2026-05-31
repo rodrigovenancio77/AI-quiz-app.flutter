@@ -44,7 +44,9 @@ class EditarQuizModel extends FlutterFlowModel<EditarQuizWidget> {
     if (pickedFile != null) {
       pickedFileObj = pickedFile;
       pickedImageBytes = await pickedFile.readAsBytes();
-      (context as Element).markNeedsBuild(); 
+      if (context.mounted) {
+        (context as Element).markNeedsBuild();
+      }
     }
   }
 

@@ -143,10 +143,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          _buildStatCard('Quizzes Públicos', pub.toString(), Icons.menu_book_rounded, const Color(0xFF99CCFF), const Color(0xFF4E507A)),
-                          _buildStatCard('Quizzes Privados', priv.toString(), Icons.lock, const Color(0xFFFC8883), const Color(0xFFE1656A)),
-                          _buildStatCard('Perguntas Criadas', totalQuestions.toString(), Icons.format_list_numbered_rounded, const Color(0xFFFFEBB2), const Color(0xFFFECF15)),
-                          _buildStatCard('Total de Quizzes', allQuizzes.length.toString(), Icons.folder_special_rounded, const Color(0xFFC3FFB2), const Color(0xFF31AB31)),
+                          _buildStatCard('Quizzes Públicos', pub.toString(), Icons.menu_book_rounded, const Color(0xFF99CCFF), const Color(0xFF2B2D4A)),
+                          _buildStatCard('Quizzes Privados', priv.toString(), Icons.lock, const Color(0xFFFC8883), const Color(0xFFB33036)),
+                          _buildStatCard('Perguntas Criadas', totalQuestions.toString(), Icons.format_list_numbered_rounded, const Color(0xFFFFEBB2), const Color(0xFF997A00)),
+                          _buildStatCard('Total de Quizzes', allQuizzes.length.toString(), Icons.folder_special_rounded, const Color(0xFFC3FFB2), const Color(0xFF1C6B1C)),
                         ],
                       ),
                     ),
@@ -207,7 +207,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       decoration: BoxDecoration(
         color: bgColor, 
         borderRadius: BorderRadius.circular(12.0), 
-        border: Border.all(color: iconColor.withOpacity(0.3)),
+        border: Border.all(color: iconColor.withOpacity(0.6), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: iconColor.withOpacity(0.15),
@@ -224,10 +224,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(icon, color: iconColor, size: 36.0),
-              Text(value, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold), fontSize: 36.0, color: iconColor.withOpacity(0.9))),
+              Text(value, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold), fontSize: 36.0, color: iconColor)),
             ],
           ),
-          Align(alignment: Alignment.centerLeft, child: Text(label, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600), fontSize: 14.0, color: iconColor.withOpacity(0.9)))),
+          Align(alignment: Alignment.centerLeft, child: Text(label, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600), fontSize: 14.0, color: iconColor))),
         ],
       ),
     );
@@ -271,11 +271,11 @@ class _DashboardWidgetState extends State<DashboardWidget> {
               child: Column(
                 children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF42436F)))),
-                    Icon(isPublic ? Icons.public : Icons.lock, size: 14, color: const Color(0xFF42436F)),
+                    Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1B1C33)))),
+                    Icon(isPublic ? Icons.public : Icons.lock, size: 14, color: const Color(0xFF1B1C33)),
                   ]),
                   const SizedBox(height: 4),
-                  Align(alignment: Alignment.centerLeft, child: Text(_timeAgo(data['createdAt'] as Timestamp?), style: const TextStyle(fontSize: 11, color: Colors.grey))),
+                  Align(alignment: Alignment.centerLeft, child: Text(_timeAgo(data['createdAt'] as Timestamp?), style: const TextStyle(fontSize: 11, color: Color(0xFF5A5A5A)))),
                 ],
               ),
             ),
@@ -290,7 +290,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
       decoration: BoxDecoration(
         color: FlutterFlowTheme.of(context).secondaryBackground, 
         borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(color: FlutterFlowTheme.of(context).alternate.withOpacity(0.5), width: 2),
+        border: Border.all(color: FlutterFlowTheme.of(context).alternate, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),

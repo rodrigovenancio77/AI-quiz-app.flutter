@@ -64,7 +64,9 @@ class EditarPerfilModel extends FlutterFlowModel<EditarPerfilWidget> {
       // Lê os bytes (Isto funciona na Web perfeitamente!)
       pickedImageBytes = await pickedFile.readAsBytes();
       // ignore: use_build_context_synchronously
-      (context as Element).markNeedsBuild(); 
+      if (context.mounted) {
+        (context as Element).markNeedsBuild();
+      }
     }
   }
 

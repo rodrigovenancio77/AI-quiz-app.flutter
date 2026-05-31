@@ -29,6 +29,7 @@ class ResponderQuizWidget extends StatefulWidget {
 
 class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
   late ResponderQuizModel _model;
+  final ScrollController _questionScrollController = ScrollController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   String? quizId;
@@ -251,6 +252,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
 
   @override
   void dispose() {
+    _questionScrollController.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -290,18 +292,18 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                 children: [
               // --- IMAGEM E PERGUNTA ---
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 8.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 8.0),
                 child: Column(
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.only(topLeft: Radius.circular(8.0), topRight: Radius.circular(8.0)),
                       child: Image.network(
                         currentQ['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600', 
-                        width: 344.0, 
+                        width: double.infinity, 
                         height: 200.0, 
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          width: 344.0,
+                          width: double.infinity,
                           height: 200.0,
                           color: Colors.grey[300],
                           child: const Icon(Icons.image, size: 50),
@@ -309,8 +311,8 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                       ),
                     ),
                     Container(
-                      width: 344.0,
-                      constraints: const BoxConstraints(maxHeight: 150.0),
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxHeight: 90.0),
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).primary,
                         borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
@@ -318,11 +320,13 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Scrollbar(
+                          controller: _questionScrollController,
                           thumbVisibility: true,
                           child: SingleChildScrollView(
+                            controller: _questionScrollController,
                             child: Text(
                               currentQ['question'] ?? '...',
-                              textAlign: TextAlign.center,
+                              textAlign: TextAlign.start,
                               style: FlutterFlowTheme.of(context).bodyMedium.override(
                                     font: GoogleFonts.inter(fontWeight: FontWeight.bold),
                                     color: FlutterFlowTheme.of(context).primaryBackground,
@@ -408,8 +412,18 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                         childAspectRatio: 1.0,
                       ),
                       children: [
-                        _buildOptionButton(0, options.isNotEmpty ? options[0] : '', const Color(0xFFF5C4C6), const Color(0xFFFC8883)),
-                        _buildOptionButton(1, options.length > 1 ? options[1] : '', const Color(0xFFC3FFB2), const Color(0xFF31AB31)),
+                        _buildOptionButton(
+                          0,
+                          options.isNotEmpty ? options[0] : '',
+                          options.length == 2 ? const Color(0xFFC3FFB2) : const Color(0xFFF5C4C6),
+                          options.length == 2 ? const Color(0xFF31AB31) : const Color(0xFFFC8883),
+                        ),
+                        _buildOptionButton(
+                          1,
+                          options.length > 1 ? options[1] : '',
+                          options.length == 2 ? const Color(0xFFF5C4C6) : const Color(0xFFC3FFB2),
+                          options.length == 2 ? const Color(0xFFFC8883) : const Color(0xFF31AB31),
+                        ),
                         if (options.length > 2)
                           _buildOptionButton(2, options[2], const Color(0xFF99CCFF), const Color(0xFF4E507A)),
                         if (options.length > 3)
@@ -560,7 +574,6 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
         ),
         alignment: Alignment.center,
         child: Scrollbar(
-          thumbVisibility: true,
           child: SingleChildScrollView(
             child: Text(
               text,

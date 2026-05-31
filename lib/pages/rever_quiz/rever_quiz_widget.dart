@@ -20,6 +20,7 @@ class ReverQuizWidget extends StatefulWidget {
 
 class _ReverQuizWidgetState extends State<ReverQuizWidget> {
   late ReverQuizModel _model;
+  final ScrollController _questionScrollController = ScrollController();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   
@@ -74,6 +75,7 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
 
   @override
   void dispose() {
+    _questionScrollController.dispose();
     _model.dispose();
     super.dispose();
   }
@@ -119,7 +121,7 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                 mainAxisSize: MainAxisSize.max,
                 children: [
               Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(12.0, 16.0, 12.0, 8.0),
+                padding: const EdgeInsetsDirectional.fromSTEB(24.0, 16.0, 24.0, 8.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
@@ -143,6 +145,7 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                     ),
                     Container(
                       width: double.infinity,
+                      constraints: const BoxConstraints(maxHeight: 90.0),
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).primary,
                         borderRadius: const BorderRadius.only(
@@ -152,13 +155,21 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          questionText,
-                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                                color: FlutterFlowTheme.of(context).primaryBackground,
-                                fontSize: 16.0,
-                              ),
+                        child: Scrollbar(
+                          controller: _questionScrollController,
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            controller: _questionScrollController,
+                            child: Text(
+                              questionText,
+                              textAlign: TextAlign.start,
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    color: FlutterFlowTheme.of(context).primaryBackground,
+                                    fontSize: 16.0,
+                                  ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -249,7 +260,6 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                         ),
                         alignment: Alignment.center,
                         child: Scrollbar(
-                          thumbVisibility: true,
                           child: SingleChildScrollView(
                             child: Text(
                               optionText,

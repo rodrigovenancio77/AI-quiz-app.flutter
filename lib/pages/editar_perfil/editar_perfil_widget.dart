@@ -217,8 +217,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                         controller: _model.textController2,
                         focusNode: _model.textFieldFocusNode2,
                         readOnly: _isGoogleUser,
-                        enabled: !_isGoogleUser,
-                        decoration: _buildInputDecoration(context, 'Endereço de Email', Icons.alternate_email),
+                        decoration: _buildInputDecoration(context, 'Endereço de Email', Icons.alternate_email, isDisabled: _isGoogleUser),
                         style: FlutterFlowTheme.of(context).bodyLarge.override(font: GoogleFonts.inter(), color: const Color(0xFF9095A1)),
                         keyboardType: TextInputType.emailAddress,
                         validator: _model.textController2Validator.asValidator(context),
@@ -356,7 +355,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
     );
   }
 
-  InputDecoration _buildInputDecoration(BuildContext context, String hint, IconData icon) {
+  InputDecoration _buildInputDecoration(BuildContext context, String hint, IconData icon, {bool isDisabled = false}) {
     return InputDecoration(
       isDense: true,
       hintText: hint,
@@ -365,8 +364,9 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
       focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0x00000000), width: 1.0), borderRadius: BorderRadius.circular(12.0)),
       errorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(12.0)),
       focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide(color: FlutterFlowTheme.of(context).error, width: 1.0), borderRadius: BorderRadius.circular(12.0)),
+      disabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFF9095A1), width: 1.0), borderRadius: BorderRadius.circular(12.0)),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: isDisabled ? const Color(0xFFF0F0F0) : Colors.white,
       suffixIcon: Icon(icon, color: const Color(0xFFAAAEB8), size: 20.0),
     );
   }
