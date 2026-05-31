@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "764128780060-705aeb5lnisr9v1j3j09hu9fldsfbdnh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mycompany.desafia",
+            "certificate_hash": "6cfda4905f87c17384fb4c0822e89a582bed4b25"
+          }
+        },
+        {
           "client_id": "764128780060-k2tddeivdeghm7nvg5vkdps2u70ijiff.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
