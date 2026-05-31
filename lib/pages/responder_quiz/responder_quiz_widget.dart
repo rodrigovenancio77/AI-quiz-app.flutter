@@ -122,9 +122,17 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
     Duration taken = Duration(milliseconds: takenMs);
     String timeStr = '${taken.inMinutes}:${(taken.inSeconds % 60).toString().padLeft(2, '0')}';
 
+    // Prepara a lista de respostas para guardar
+    List<int> userAnswersList = [];
+    for (int i = 0; i < _questions.length; i++) {
+      userAnswersList.add(_userAnswers[i] ?? -1);
+    }
+
+    String? resultId;
+
     // GUARDA OS RESULTADOS NA BASE DE DADOS
     try {
-      await FirebaseFirestore.instance
+      final docRef = await FirebaseFirestore.instance
           .collection('quizzes')
           .doc(quizId)
           .collection('results')
@@ -135,8 +143,10 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
         'score': correctAnswers,
         'totalQuestions': _questions.length,
         'timeTaken': timeStr,
+        'userAnswers': userAnswersList,
         'completedAt': FieldValue.serverTimestamp(),
       });
+      resultId = docRef.id;
     } catch (e) {
       print('Erro ao guardar resultado: $e');
     }
@@ -147,6 +157,7 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
         'FimQuiz',
         queryParameters: {
           'quizId': quizId,
+          'resultId': resultId,
           'score': correctAnswers.toString(),
           'totalQuestions': _questions.length.toString(),
           'timeTaken': timeStr,
@@ -271,9 +282,12 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
         backgroundColor: const Color(0xFFEBEBF0),
         body: SafeArea(
           top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
               // --- IMAGEM E PERGUNTA ---
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 8.0),
@@ -296,20 +310,26 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                     ),
                     Container(
                       width: 344.0,
+                      constraints: const BoxConstraints(maxHeight: 150.0),
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).primary,
                         borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          currentQ['question'] ?? '...',
-                          textAlign: TextAlign.center,
-                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                                color: FlutterFlowTheme.of(context).primaryBackground,
-                                fontSize: 16.0,
-                              ),
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: Text(
+                              currentQ['question'] ?? '...',
+                              textAlign: TextAlign.center,
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                    color: FlutterFlowTheme.of(context).primaryBackground,
+                                    fontSize: 16.0,
+                                  ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -377,22 +397,25 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                  child: GridView(
-                    padding: EdgeInsets.zero,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                      childAspectRatio: 1.0,
+                  child: Center(
+                    child: GridView(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 8.0,
+                        mainAxisSpacing: 8.0,
+                        childAspectRatio: 1.0,
+                      ),
+                      children: [
+                        _buildOptionButton(0, options.isNotEmpty ? options[0] : '', const Color(0xFFF5C4C6), const Color(0xFFFC8883)),
+                        _buildOptionButton(1, options.length > 1 ? options[1] : '', const Color(0xFFC3FFB2), const Color(0xFF31AB31)),
+                        if (options.length > 2)
+                          _buildOptionButton(2, options[2], const Color(0xFF99CCFF), const Color(0xFF4E507A)),
+                        if (options.length > 3)
+                          _buildOptionButton(3, options[3], const Color(0xFFFFEBB2), const Color(0xFFFECF15)),
+                      ],
                     ),
-                    children: [
-                      _buildOptionButton(0, options.isNotEmpty ? options[0] : '', const Color(0xFFF5C4C6), const Color(0xFFFC8883)),
-                      _buildOptionButton(1, options.length > 1 ? options[1] : '', const Color(0xFFC3FFB2), const Color(0xFF31AB31)),
-                      if (options.length > 2)
-                        _buildOptionButton(2, options[2], const Color(0xFF99CCFF), const Color(0xFF4E507A)),
-                      if (options.length > 3)
-                        _buildOptionButton(3, options[3], const Color(0xFFFFEBB2), const Color(0xFFFECF15)),
-                    ],
                   ),
                 ),
               ),
@@ -504,6 +527,8 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
               ),
             ],
           ),
+          ),
+          ),
         ),
       ),
     );
@@ -515,24 +540,38 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
 
     bool isSelected = _userAnswers[_currentIndex] == index;
 
-    return FFButtonWidget(
-      onPressed: () {
+    return InkWell(
+      onTap: () {
         setState(() => _userAnswers[_currentIndex] = index);
       },
-      text: text,
-      options: FFButtonOptions(
+      borderRadius: BorderRadius.circular(8.0),
+      child: Container(
         padding: const EdgeInsets.all(8.0),
-        color: bgColor,
-        textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-              font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-              color: const Color(0xFF1C1D26), // Cor escura para leitura
-            ),
-        elevation: isSelected ? 6.0 : 0.0,
-        borderSide: BorderSide(
-          color: isSelected ? const Color(0xFF1C1D26) : borderColor,
-          width: isSelected ? 4.0 : 2.0,
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12.0),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1C1D26) : borderColor,
+            width: isSelected ? 4.0 : 2.0,
+          ),
+          boxShadow: isSelected
+              ? const [BoxShadow(color: Colors.black26, blurRadius: 6.0, offset: Offset(0, 3))]
+              : [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6.0, offset: const Offset(0, 4))],
         ),
-        borderRadius: BorderRadius.circular(8.0),
+        alignment: Alignment.center,
+        child: Scrollbar(
+          thumbVisibility: true,
+          child: SingleChildScrollView(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                    color: const Color(0xFF1C1D26),
+                  ),
+            ),
+          ),
+        ),
       ),
     );
   }

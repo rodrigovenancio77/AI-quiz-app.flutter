@@ -77,7 +77,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
   void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Wrap(
             children: [
@@ -85,7 +85,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Câmara'),
                 onTap: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   await _model.pickImage(context, ImageSource.camera);
                   _uploadImageAndSetUrl();
                 },
@@ -94,7 +94,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Galeria'),
                 onTap: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   await _model.pickImage(context, ImageSource.gallery);
                   _uploadImageAndSetUrl();
                 },
@@ -565,15 +565,17 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                      child: GridView(
-                        padding: EdgeInsets.zero,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1.0,
-                        ),
-                        children: [
+                      child: Center(
+                        child: GridView(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 8.0,
+                            mainAxisSpacing: 8.0,
+                            childAspectRatio: 1.0,
+                          ),
+                          children: [
                           // RESPOSTA 1 (VERMELHO)
                           Container(
                             decoration: BoxDecoration(
@@ -701,6 +703,7 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                             ),
                           ],
                         ],
+                      ),
                       ),
                     ),
                   ),

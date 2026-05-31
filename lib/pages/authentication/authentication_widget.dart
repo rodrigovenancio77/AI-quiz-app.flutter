@@ -103,8 +103,11 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                 children: [
                   Align(
                     alignment: const AlignmentDirectional(0.0, 1.0),
-                    child: Column(
-                      children: [
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 500),
+                        child: Column(
+                          children: [
                         Align(
                           alignment: const Alignment(0.0, 0),
                           child: TabBar(
@@ -586,7 +589,16 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                         return; // O authManager mostra os erros automaticamente
                                       }
                                       
-                                      // 3. Navegar para a página inicial (Dashboard)
+                                      // 3. Verificar se o email está confirmado
+                                      if (!FirebaseAuth.instance.currentUser!.emailVerified) {
+                                        await authManager.signOut();
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor, confirma o teu email antes de iniciar sessão.')));
+                                        }
+                                        return;
+                                      }
+                                      
+                                      // 4. Navegar para a página inicial (Dashboard)
                                       context.goNamed('Dashboard'); 
                                     },
                                     text: 'Iniciar Sessão',
@@ -1413,8 +1425,15 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                                         // 4. Grava o Nome no Firebase Auth (textController3)
                                         await FirebaseAuth.instance.currentUser?.updateDisplayName(_model.textController3!.text);
                                         
-                                        // 5. Navegar para o Dashboard
-                                        if (context.mounted) context.goNamed('Dashboard');
+                                        // 5. Envia o email de verificação
+                                        await FirebaseAuth.instance.currentUser?.sendEmailVerification();
+                                        await authManager.signOut(); // Desliga para forçar a verificação
+                                        
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Conta criada! Verifica o teu email para confirmares a conta.')));
+                                          // Muda para a tab de login
+                                          safeSetState(() => _model.tabBarController?.animateTo(0));
+                                        }
                                       }
                                     },
                                     text: 'Criar Conta',
@@ -1539,7 +1558,9 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget>
                       ],
                     ),
                   ),
-                ],
+                ),
+              ),
+            ],
               ),
             ],
           ),

@@ -79,7 +79,10 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
         ),
         body: SafeArea(
           top: true,
-          child: Column(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
               // --- BARRA DE PESQUISA ---
@@ -154,9 +157,19 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                                     controller: codeController,
                                     maxLength: 6,
                                     textCapitalization: TextCapitalization.characters,
-                                    decoration: const InputDecoration(
-                                      border: OutlineInputBorder(),
-                                      hintText: 'Ex: A1B2C3',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8.0),
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(color: FlutterFlowTheme.of(context).primary, width: 2),
+                                      ),
+                                      hintText: 'A1B2C3',
+                                      hintStyle: const TextStyle(letterSpacing: 8.0, color: Colors.black26),
+                                      filled: true,
+                                      fillColor: Colors.grey.shade100,
+                                      counterText: '',
                                     ),
                                   ),
                                 ],
@@ -279,9 +292,17 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                             height: 100.0,
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context).secondaryBackground,
-                              borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(12.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.08),
+                                  blurRadius: 10.0,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
                             ),
                             child: InkWell(
+                              borderRadius: BorderRadius.circular(12.0),
                               onTap: () async {
                                 // Redireciona para jogar
                                 context.pushNamed(
@@ -295,8 +316,8 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                                   // Imagem do Quiz
                                   ClipRRect(
                                     borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(8.0),
-                                      bottomLeft: Radius.circular(8.0),
+                                      topLeft: Radius.circular(12.0),
+                                      bottomLeft: Radius.circular(12.0),
                                     ),
                                     child: Image.network(
                                       imageUrl,
@@ -361,6 +382,8 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                 ),
               ),
             ],
+          ),
+          ),
           ),
         ),
       ),

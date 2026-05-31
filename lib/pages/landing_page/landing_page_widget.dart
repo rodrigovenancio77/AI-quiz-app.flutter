@@ -117,7 +117,7 @@ class _LandingPageWidgetState extends State<LandingPageWidget> {
                   alignment: const AlignmentDirectional(0.0, 0.05),
                   child: FFButtonWidget(
                     onPressed: () async {
-                      context.goNamed(ParticiparWidget.routeName);
+                      context.goNamed(AuthenticationWidget.routeName);
                     },
                     text: 'Começar Agora',
                     options: FFButtonOptions(

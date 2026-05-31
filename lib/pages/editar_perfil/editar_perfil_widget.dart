@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '/auth/firebase_auth/auth_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'editar_perfil_model.dart';
@@ -60,7 +61,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
   void _showImageSourceSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Wrap(
             children: [
@@ -68,7 +69,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                 leading: const Icon(Icons.photo_camera),
                 title: const Text('Câmara'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _model.pickImage(context, ImageSource.camera);
                 },
               ),
@@ -76,7 +77,7 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('Galeria'),
                 onTap: () {
-                  Navigator.pop(context);
+                  Navigator.pop(sheetContext);
                   _model.pickImage(context, ImageSource.gallery);
                 },
               ),
@@ -443,17 +444,66 @@ class _EditarPerfilWidgetState extends State<EditarPerfilWidget> {
           }
         }
 
-        // --- CORREÇÃO DO INSTANT REFRESH ---
-        if (updated) {
-          await user.reload();
-        }
-
         if (mounted) {
           if (passwordChanged) {
             showSnackbar(context, 'Palavra-passe alterada. Inicia sessão novamente.');
             await authManager.signOut();
-            context.go('/authentication');
-          } else if (updated) {
+            return; // Terminate here to avoid user.reload() on an invalid token
+          }
+        }
+
+        // --- CORREÇÃO DO INSTANT REFRESH E ATUALIZAÇÃO DO HISTÓRICO ---
+        if (updated) {
+          await user.reload();
+
+          // Atualizar o nome e foto do utilizador nos resultados antigos
+          try {
+            final quizzesSnapshot = await FirebaseFirestore.instance.collection('quizzes').get();
+            final batch = FirebaseFirestore.instance.batch();
+            bool hasUpdates = false;
+
+            for (var quiz in quizzesSnapshot.docs) {
+              final resultsSnapshot = await quiz.reference
+                  .collection('results')
+                  .where('userId', isEqualTo: user.uid)
+                  .get();
+
+              for (var res in resultsSnapshot.docs) {
+                final data = res.data();
+                bool needsUpdate = false;
+                final updates = <String, dynamic>{};
+
+                final String? expectedPhoto = newPhotoUrl ?? user.photoURL;
+                final String? expectedName = _model.textController1!.text.isNotEmpty 
+                    ? _model.textController1!.text 
+                    : user.displayName;
+
+                if (expectedPhoto != null && data['userPhoto'] != expectedPhoto) {
+                  updates['userPhoto'] = expectedPhoto;
+                  needsUpdate = true;
+                }
+                if (expectedName != null && data['userName'] != expectedName) {
+                  updates['userName'] = expectedName;
+                  needsUpdate = true;
+                }
+
+                if (needsUpdate) {
+                  batch.update(res.reference, updates);
+                  hasUpdates = true;
+                }
+              }
+            }
+
+            if (hasUpdates) {
+              await batch.commit();
+            }
+          } catch (e) {
+            print('Erro ao atualizar resultados antigos: $e');
+          }
+        }
+
+        if (mounted) {
+          if (updated) {
             showSnackbar(context, 'Perfil atualizado com sucesso!');
             if (context.canPop()) {
               context.pop();

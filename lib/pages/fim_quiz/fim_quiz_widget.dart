@@ -23,6 +23,7 @@ class _FimQuizWidgetState extends State<FimQuizWidget> {
 
   // Variáveis para guardar os dados recebidos
   String? quizId;
+  String? resultId;
   int score = 0;
   int totalQuestions = 0;
   String timeTaken = '0:00';
@@ -43,6 +44,7 @@ class _FimQuizWidgetState extends State<FimQuizWidget> {
     
     setState(() {
       quizId = params['quizId'];
+      resultId = params['resultId'];
       score = int.tryParse(params['score'] ?? '0') ?? 0;
       totalQuestions = int.tryParse(params['totalQuestions'] ?? '0') ?? 0;
       timeTaken = params['timeTaken'] ?? '0:00';
@@ -194,12 +196,21 @@ class _FimQuizWidgetState extends State<FimQuizWidget> {
                         ),
                         FFButtonWidget(
                           onPressed: () async {
-                            context.pushNamed(
-                              'ResultadosQuiz',
-                              queryParameters: {'quizId': quizId}.withoutNulls,
-                            );
+                            if (resultId != null) {
+                              context.pushNamed(
+                                'ReverQuiz',
+                                queryParameters: {
+                                  'quizId': quizId,
+                                  'resultId': resultId,
+                                }.withoutNulls,
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Resultados indisponíveis para revisão.')),
+                              );
+                            }
                           },
-                          text: 'Leaderboard',
+                          text: 'Rever',
                           options: FFButtonOptions(
                             width: 150.0,
                             height: 45.0,

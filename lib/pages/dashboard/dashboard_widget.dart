@@ -134,11 +134,11 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       padding: const EdgeInsetsDirectional.fromSTEB(24.0, 8.0, 24.0, 8.0),
                       child: GridView(
                         padding: EdgeInsets.zero,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1.4,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width > 1200 ? 4 : (MediaQuery.of(context).size.width > 800 ? 3 : 2),
+                          crossAxisSpacing: 12.0,
+                          mainAxisSpacing: 12.0,
+                          childAspectRatio: 1.5,
                         ),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -171,11 +171,11 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       padding: const EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 24.0),
                       child: GridView.builder(
                         padding: EdgeInsets.zero,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8.0,
-                          mainAxisSpacing: 8.0,
-                          childAspectRatio: 1.0,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).size.width > 1200 ? 6 : (MediaQuery.of(context).size.width > 800 ? 4 : (MediaQuery.of(context).size.width > 600 ? 3 : 2)),
+                          crossAxisSpacing: 12.0,
+                          mainAxisSpacing: 12.0,
+                          childAspectRatio: 0.9,
                         ),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -189,6 +189,7 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         },
                       ),
                     ),
+                    const SizedBox(height: 80.0),
                   ],
                 ),
               );
@@ -203,19 +204,30 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
   Widget _buildStatCard(String label, String value, IconData icon, Color bgColor, Color iconColor) {
     return Container(
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(8.0), border: Border.all(color: iconColor)),
-      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: bgColor, 
+        borderRadius: BorderRadius.circular(12.0), 
+        border: Border.all(color: iconColor.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: iconColor.withOpacity(0.15),
+            blurRadius: 10.0,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(icon, color: iconColor, size: 32.0),
-              Text(value, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold), fontSize: 32.0)),
+              Icon(icon, color: iconColor, size: 36.0),
+              Text(value, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.bold), fontSize: 36.0, color: iconColor.withOpacity(0.9))),
             ],
           ),
-          Align(alignment: Alignment.centerLeft, child: Text(label, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600), fontSize: 13.0))),
+          Align(alignment: Alignment.centerLeft, child: Text(label, style: FlutterFlowTheme.of(context).bodyMedium.override(font: GoogleFonts.inter(fontWeight: FontWeight.w600), fontSize: 14.0, color: iconColor.withOpacity(0.9)))),
         ],
       ),
     );
@@ -228,27 +240,42 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
     return InkWell(
       onTap: () => context.pushNamed('EditarQuiz', queryParameters: {'quizId': id}),
+      borderRadius: BorderRadius.circular(12.0),
       child: Container(
-        decoration: BoxDecoration(color: FlutterFlowTheme.of(context).secondaryBackground, borderRadius: BorderRadius.circular(8.0)),
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground, 
+          borderRadius: BorderRadius.circular(12.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10.0,
+              offset: const Offset(0, 4),
+            )
+          ],
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8.0)), 
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12.0)), 
                 child: Image.network(imageUrl, fit: BoxFit.cover)
               )
             ),
             Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: const BoxDecoration(color: Color(0xFFC2C2DD), borderRadius: BorderRadius.vertical(bottom: Radius.circular(8.0))),
+              padding: const EdgeInsets.all(12.0),
+              decoration: const BoxDecoration(
+                color: Color(0xFFEBEBF0), 
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(12.0))
+              ),
               child: Column(
                 children: [
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
-                    Icon(isPublic ? Icons.public : Icons.lock, size: 12),
+                    Expanded(child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF42436F)))),
+                    Icon(isPublic ? Icons.public : Icons.lock, size: 14, color: const Color(0xFF42436F)),
                   ]),
-                  Align(alignment: Alignment.centerLeft, child: Text(_timeAgo(data['createdAt'] as Timestamp?), style: const TextStyle(fontSize: 10))),
+                  const SizedBox(height: 4),
+                  Align(alignment: Alignment.centerLeft, child: Text(_timeAgo(data['createdAt'] as Timestamp?), style: const TextStyle(fontSize: 11, color: Colors.grey))),
                 ],
               ),
             ),
@@ -260,7 +287,18 @@ class _DashboardWidgetState extends State<DashboardWidget> {
 
   Widget _buildAddButton() {
     return Container(
-      decoration: BoxDecoration(color: FlutterFlowTheme.of(context).secondaryBackground, borderRadius: BorderRadius.circular(8.0)),
+      decoration: BoxDecoration(
+        color: FlutterFlowTheme.of(context).secondaryBackground, 
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: FlutterFlowTheme.of(context).alternate.withOpacity(0.5), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10.0,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
       child: IconButton(
         icon: Icon(Icons.add_rounded, color: FlutterFlowTheme.of(context).alternate, size: 48.0),
         onPressed: () => context.pushNamed(AddQuizWidget.routeName),

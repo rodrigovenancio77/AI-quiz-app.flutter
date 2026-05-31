@@ -63,7 +63,7 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
       }
 
       // Load questions
-      final questionsSnapshot = await FirebaseFirestore.instance.collection('quizzes').doc(quizId).collection('questions').orderBy('order').get();
+      final questionsSnapshot = await FirebaseFirestore.instance.collection('quizzes').doc(quizId).collection('questions').orderBy('createdAt').get();
       _questions = questionsSnapshot.docs.map((doc) => doc.data()).toList();
       
     } catch (e) {
@@ -99,8 +99,8 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
     final options = List<String>.from(question['options'] ?? []);
     final correctAnswerIndex = question['correctAnswerIndex'] as int? ?? 0;
     final userAnswerIndex = _userAnswers.length > _currentIndex ? _userAnswers[_currentIndex] : -1;
-    final imageUrl = question['imageUrl'] as String? ?? 'https://picsum.photos/seed/762/600';
-    final questionText = question['text'] ?? 'Sem pergunta';
+    final imageUrl = question['imageUrl'] as String? ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600';
+    final questionText = question['question'] ?? '...';
 
     return GestureDetector(
       onTap: () {
@@ -112,9 +112,12 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
         backgroundColor: const Color(0xFFEBEBF0),
         body: SafeArea(
           top: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: [
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(12.0, 16.0, 12.0, 8.0),
                 child: Column(
@@ -227,19 +230,36 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                         borderColor = const Color(0xFFFC8883);
                       }
                       
-                      return FFButtonWidget(
-                        onPressed: () {}, // Desativado no modo revisão
-                        text: optionText,
-                        options: FFButtonOptions(
-                          padding: const EdgeInsets.all(8.0),
+                      return Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
                           color: bgColor,
-                          textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                            font: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                            color: textColor,
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(
+                            color: borderColor,
+                            width: 2.0,
                           ),
-                          borderSide: BorderSide(color: borderColor, width: 2.0),
-                          borderRadius: BorderRadius.circular(8.0),
-                          elevation: 0.0,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 6.0,
+                              offset: const Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: Text(
+                              optionText,
+                              textAlign: TextAlign.center,
+                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                    font: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                                    color: textColor,
+                                  ),
+                            ),
+                          ),
                         ),
                       );
                     },
@@ -313,6 +333,8 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                 ),
               ),
             ],
+          ),
+          ),
           ),
         ),
       ),
