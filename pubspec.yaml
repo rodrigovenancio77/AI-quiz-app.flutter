@@ -98,6 +98,7 @@ dependencies:
 dev_dependencies:
   flutter_lints: ^6.0.0
   lints: ^6.1.0
+  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -150,3 +151,12 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
 
+flutter_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    background_color: "#ffffff"
+    theme_color: "#ffffff"
+  image_path: "assets/images/app_icon.png"
