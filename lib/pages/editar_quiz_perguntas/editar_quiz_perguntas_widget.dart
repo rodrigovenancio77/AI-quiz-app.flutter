@@ -433,19 +433,23 @@ class _EditarQuizPerguntasWidgetState extends State<EditarQuizPerguntasWidget> {
                                     topLeft: Radius.circular(8.0),
                                     topRight: Radius.circular(8.0),
                                   ),
-                                  child: Image.network(
-                                    (_localQuestions.isNotEmpty && _localQuestions[_currentIndex]['imageUrl'] != null) 
-                                        ? _localQuestions[_currentIndex]['imageUrl'] 
-                                        : 'https://picsum.photos/seed/${quizId ?? '0'}_${_currentIndex}/600',
-                                    width: double.infinity,
-                                    height: 200.0,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      width: double.infinity,
-                                      height: 200.0,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.image, size: 50),
-                                    ),
+                                  child: Builder(
+                                    builder: (context) {
+                                      final rawImg = (_localQuestions.isNotEmpty && _localQuestions[_currentIndex]['imageUrl'] != null) ? _localQuestions[_currentIndex]['imageUrl'] : null;
+                                      final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/${quizId ?? '0'}_${_currentIndex}/600' : rawImg.toString();
+                                      return Image.network(
+                                        imageUrl,
+                                        width: double.infinity,
+                                        height: 200.0,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          width: double.infinity,
+                                          height: 200.0,
+                                          color: Colors.grey[300],
+                                          child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                        ),
+                                      );
+                                    }
                                   ),
                                 ),
                                 Padding(

@@ -284,7 +284,8 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                         final title = quizData['title'] ?? 'Sem Título';
                         final questionCount = quizData['questionCount'] ?? 0;
                         final duration = quizData['durationMinutes'] ?? '--';
-                        final imageUrl = quizData['imageUrl'] ?? 'https://picsum.photos/seed/$docId/600';
+                        final rawImg = quizData['imageUrl'];
+                        final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/$docId/600' : rawImg.toString();
 
                         return Padding(
                           padding: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
@@ -324,6 +325,12 @@ class _ParticiparWidgetState extends State<ParticiparWidget> {
                                       width: 100.0,
                                       height: 100.0,
                                       fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        width: 100.0,
+                                        height: 100.0,
+                                        color: Colors.grey[300],
+                                        child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                                      ),
                                     ),
                                   ),
                                   Expanded(

@@ -101,7 +101,8 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
     final options = List<String>.from(question['options'] ?? []);
     final correctAnswerIndex = question['correctAnswerIndex'] as int? ?? 0;
     final userAnswerIndex = _userAnswers.length > _currentIndex ? _userAnswers[_currentIndex] : -1;
-    final imageUrl = question['imageUrl'] as String? ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600';
+    final rawImg = question['imageUrl'];
+    final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600' : rawImg.toString();
     final questionText = question['question'] ?? '...';
 
     return GestureDetector(
@@ -138,8 +139,8 @@ class _ReverQuizWidgetState extends State<ReverQuizWidget> {
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: double.infinity,
                           height: 200.0,
-                          color: Colors.grey,
-                          child: const Icon(Icons.image_not_supported, size: 50),
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
                         ),
                       ),
                     ),

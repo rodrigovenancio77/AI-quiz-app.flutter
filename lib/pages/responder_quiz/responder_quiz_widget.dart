@@ -297,17 +297,23 @@ class _ResponderQuizWidgetState extends State<ResponderQuizWidget> {
                   children: [
                     ClipRRect(
                       borderRadius: const BorderRadius.only(topLeft: Radius.circular(8.0), topRight: Radius.circular(8.0)),
-                      child: Image.network(
-                        currentQ['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600', 
-                        width: double.infinity, 
-                        height: 200.0, 
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: double.infinity,
-                          height: 200.0,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image, size: 50),
-                        ),
+                      child: Builder(
+                        builder: (context) {
+                          final rawImg = currentQ['imageUrl'];
+                          final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/${quizId ?? '0'}_$_currentIndex/600' : rawImg.toString();
+                          return Image.network(
+                            imageUrl, 
+                            width: double.infinity, 
+                            height: 200.0, 
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              width: double.infinity,
+                              height: 200.0,
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                            ),
+                          );
+                        }
                       ),
                     ),
                     Container(

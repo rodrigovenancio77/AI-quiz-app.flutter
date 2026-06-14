@@ -176,17 +176,23 @@ class _EditarQuizWidgetState extends State<EditarQuizWidget> {
                                          height: 200.0,
                                          fit: BoxFit.cover,
                                        )
-                                     : Image.network(
-                                         quizData?['imageUrl'] ?? 'https://picsum.photos/seed/${quizId ?? '762'}/600',
-                                         width: 344.0,
-                                         height: 200.0,
-                                         fit: BoxFit.cover,
-                                         errorBuilder: (context, error, stackTrace) => Container(
-                                           width: 344.0,
-                                           height: 200.0,
-                                           color: Colors.grey[300],
-                                           child: const Icon(Icons.image, size: 50),
-                                         ),
+                                     : Builder(
+                                         builder: (context) {
+                                           final rawImg = quizData?['imageUrl'];
+                                           final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/${quizId ?? '762'}/600' : rawImg.toString();
+                                           return Image.network(
+                                             imageUrl,
+                                             width: 344.0,
+                                             height: 200.0,
+                                             fit: BoxFit.cover,
+                                             errorBuilder: (context, error, stackTrace) => Container(
+                                               width: 344.0,
+                                               height: 200.0,
+                                               color: Colors.grey[300],
+                                               child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                             ),
+                                           );
+                                         }
                                        ),
                                ),
                                Padding(

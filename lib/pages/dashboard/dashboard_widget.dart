@@ -236,7 +236,8 @@ class _DashboardWidgetState extends State<DashboardWidget> {
   Widget _buildRecentQuizCard(String id, Map<String, dynamic> data) {
     final title = data['title'] ?? 'Sem Título';
     final isPublic = data['isPublic'] ?? false;
-    final imageUrl = data['imageUrl'] ?? 'https://picsum.photos/seed/$id/400';
+    final rawImg = data['imageUrl'];
+    final imageUrl = (rawImg == null || rawImg.toString().trim().isEmpty) ? 'https://picsum.photos/seed/$id/400' : rawImg.toString();
 
     return InkWell(
       onTap: () => context.pushNamed('EditarQuiz', queryParameters: {'quizId': id}),
@@ -259,7 +260,14 @@ class _DashboardWidgetState extends State<DashboardWidget> {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12.0)), 
-                child: Image.network(imageUrl, fit: BoxFit.cover)
+                child: Image.network(
+                  imageUrl, 
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                  ),
+                )
               )
             ),
             Container(
