@@ -1,4 +1,5 @@
 # DesafIA 
+Project Language: PT
 
 **DesafIA** is a mobile application developed in Flutter, focused on creating and solving quizzes using **AI**. With the integration of the Google Generative AI API (Gemini) and Firebase, users can dynamically generate questions, create their own quizzes, and track their progress intuitively.
 
