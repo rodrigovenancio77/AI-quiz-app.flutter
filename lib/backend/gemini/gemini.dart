@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import '/flutter_flow/flutter_flow_util.dart';
 
 /// Spark-friendly: pass at build/run time, no Cloud Function.
-/// `flutter run --dart-define=GEMINI_API_KEY=AIzaSyAEAEUXdqi3pXUNlLBAM6WSmJgLe3Aeu5o`
+/// `flutter run --dart-define=GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE`
 const String _kGeminiApiKey = String.fromEnvironment(
   'GEMINI_API_KEY',
-  defaultValue: 'AIzaSyAEAEUXdqi3pXUNlLBAM6WSmJgLe3Aeu5o',
+  defaultValue: 'YOUR_GEMINI_API_KEY_HERE',
 );
 
 Future<String?> geminiGenerateText(

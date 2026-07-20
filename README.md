@@ -72,6 +72,15 @@ O projeto segue uma arquitetura modularizada para facilitar a navegação e esca
 - `lib/components/`: Componentes visuais e widgets reutilizáveis ao longo da aplicação.
 - `lib/flutter_flow/`: Tema e funções utilitárias partilhadas.
 
+## 🌟 Potenciais Melhorias no Futuro
+
+- **Modo Multiplayer em Tempo Real**: Permitir desafios diretos entre amigos ou utilizadores aleatórios, com pontuação ao vivo.
+- **Categorias Mais Avançadas**: Expansão do motor de IA para criar perguntas complexas com suporte a imagens, sons ou fórmulas matemáticas.
+- **Sistema de Níveis e Gamificação**: Implementar conquistas (achievements), níveis de experiência (XP) e leaderboards (tabelas de classificação) globais e locais.
+- **Suporte Offline Limitado**: Guardar quizzes e resultados no dispositivo utilizando Sqflite para revisão e modo de estudo sem acesso à internet.
+- **Notificações Push**: Alertas de novos desafios gerados por IA ou desafios lançados por amigos (via Firebase Cloud Messaging).
+- **Exportação de Quizzes**: Possibilidade de exportar os quizzes para formatos PDF ou para plataformas de educação.
+
 ## 🤝 Contribuições
 
 Este projeto pode ser utilizado como base ou expandido! Sintam-se à vontade para abrir uma *Issue* ou enviar um *Pull Request* se quiserem sugerir novas ideias, melhorias de código ou adicionar novos recursos.

@@ -88,7 +88,7 @@ class EditarQuizPerguntasModel
   Future<String?> uploadToImageBB() async {
     if (pickedFileObj == null || pickedImageBytes == null) return null;
 
-    const String apiKey = 'f6410412e00acf455624e31a0f54d46b';
+    const String apiKey = 'YOUR_IMGBB_API_KEY_HERE';
     const String uploadUrl = 'https://api.imgbb.com/1/upload';
 
     try {
