@@ -77,11 +77,11 @@ flowchart TD
 
 | Tecnologia | Função no Projeto | Porquê esta escolha? (Justificação para Entrevista) |
 | :--- | :--- | :--- |
-| **Flutter / Dart** | Framework Frontend | Permite compilar a partir de um único código-fonte para Web, Android, iOS e Desktop com elevado rendimento (motor de renderização Skia/Impeller). |
-| **Firebase Firestore** | Base de Dados NoSQL | Modelo de documentos flexível, excelente sincronização em tempo real via *Streams/Snapshots*, escala automática e sem necessidade de gestão de servidores. |
-| **Firebase Auth** | Autenticação | Solução segura e pronta a usar para gerir sessões, tokens JWT e múltiplos provedores de login social (Google, Apple, GitHub). |
+| **Flutter / Dart** | Framework Frontend | Permite progrmação em Mobile e já existia experiência. |
+| **Firebase Firestore** | Base de Dados NoSQL | Modelo de documentos flexível, fácil sincronização em tempo real via *Streams/Snapshots*, escala automática e sem necessidade de gestão de servidores. |
+| **Firebase Auth** | Autenticação | Solução segura e pronta a usar para gerir sessões, tokens JWT e múltiplos provedores de login social (Google). |
 | **Google Gemini 2.5 Flash** | Modelo de Linguagem (IA) | Modelo de LLM com baixíssima latência, excelente seguimento de instruções para devolução de JSON estruturado em PT-PT e integração simples via SDK `google_generative_ai`. |
-| **GoRouter** | Roteamento Declarativo | Suporte de alto nível para navegação web baseada em URLs amigáveis, redirecionamentos dinâmicos (*route guards*) baseados no estado de auth e suporte a transições de páginas. |
+| **GoRouter** | Roteamento Declarativo  navegação da app redirecionamentos dinâmicos (*route guards*) baseados no estado de auth. |
 | **ImgBB REST API** | Alojamento de Imagens | Permite o upload rápido de fotos de perfil e capas de quizzes via requisições HTTP multipart simples sem encarecer o armazenamento no Firebase. |
 
 ---
