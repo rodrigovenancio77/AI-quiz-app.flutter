@@ -1,13 +1,3 @@
-## ÍNDICE
-1. [Resumo Executivo do Projeto](#1-resumo-executivo-do-projeto)
-2. [Arquitetura de Software e Padrões de Design](#2-arquitetura-de-software-e-padrões-de-design)
-3. [Stack Tecnológico e Justificação das Escolhas](#3-stack-tecnológico-e-justificação-das-escolhas)
-4. [Estrutura da Base de Dados (Cloud Firestore)](#4-estrutura-da-base-de-dados-cloud-firestore)
-5. [Análise Detalhada dos Fluxos Críticos de Código](#5-análise-detalhada-dos-fluxos-críticos-de-código)
-6. [Desafios Técnicos Enfrentados e Soluções (Casos Reais)](#6-desafios-técnicos-enfrentados-e-soluções-casos-reais)
-7. [Bateria de Perguntas Frequentes em Entrevistas e Como Responder](#7-bateria-de-perguntas-frequentes-em-entrevistas-e-como-responder)
-8. [Evolução e Melhorias Futuras (Roadmap Técnico)](#8-evolução-e-melhorias-futuras-roadmap-técnico)
-
 ---
 
 ## 1. RESUMO EXECUTIVO DO PROJETO
@@ -166,32 +156,4 @@ Estes são pontos essenciais para mencionar numa entrevista, pois demonstram **c
 - **Problema**: Evitar expor a chave de API da IA diretamente no código-fonte do repositório Git.
 - **Solução**: Utilização de `String.fromEnvironment('GEMINI_API_KEY')` em [gemini.dart](file:///home/rodrigov/HDD/dev/ai-quizz-app/lib/backend/gemini/gemini.dart#L8), permitindo injetar a chave em tempo de compilação/execução via `--dart-define`.
 
----
-
-## 7. BATERIA DE PERGUNTAS FREQUENTES EM ENTREVISTAS E COMO RESPONDER
-
-### Q1: "Porquê escolher Firebase em vez de desenvolver uma REST API com Node.js/PostgreSQL?"
-> **Resposta Recomendada**: *"Para o escopo do DesafIA, a prioridade era o time-to-market e o suporte nativo a atualizações em tempo real. O Firebase permitiu focar na experiência do utilizador e na integração com a IA sem a sobrecarga de gerir servidores, infraestrutura de base de dados ou implementar segurança JWT do zero. O Cloud Firestore oferece escalabilidade automática e custos reduzidos baseados apenas no consumo efetivo."*
-
-### Q2: "Como lidas com falhas ou timeouts na API do Gemini?"
-> **Resposta Recomendada**: *"O processo de criação utiliza um estado intermediário no Firestore (`status: 'draft'`). Se a chamada ao Gemini falhar ou o parse de JSON falhar, é lançada uma exceção capturada por blocos `try-catch` que informam o utilizador via Snackbar, e o quiz não é marcado como pronto (`'ready'`), garantindo a integridade dos dados."*
-
-### Q3: "Como está estruturada a navegação e proteção de rotas?"
-> **Resposta Recomendada**: *"Utilizamos o `GoRouter` integrado com o `AppStateNotifier`, que escuta as alterações do utilizador no Firebase Auth. As rotas que requerem autenticação (como a criação ou edição de quizzes) têm a propriedade `requireAuth: true`. Se um utilizador não autenticado tentar aceder diretamente via URL a uma página privada, o router redireciona-o automaticamente para o login."*
-
-### Q4: "Qual o padrão de arquitetura utilizado na camada visual?"
-> **Resposta Recomendada**: *"Utilizamos uma separação limpa entre View e Controller no Flutter através do padrão `Widget/Model`. O `*_widget.dart` trata apenas da construção visual dos elementos, enquanto o `*_model.dart` gere o estado local, validadores e chamadas a serviços externos, mantendo a UI desatrelada da lógica de dados."*
-
----
-
-## 8. EVOLUÇÃO E MELHORIAS FUTURAS (ROADMAP TÉCNICO)
-
-Demonstrar consciência de pontos a melhorar mostra **maturidade de engenharia**:
-
-1. **Proxy Serverless / Cloud Functions para a IA**:
-   - Migrar as chamadas do Gemini para uma Firebase Cloud Function, evitando que a chave da API fique acessível no cliente mobile/web.
-2. **Suporte Offline / Cache Local**:
-   - Implementar armazenamento local com `sqflite` ou `Hive` para permitir responder a quizzes previamente descarregados mesmo sem ligação à Internet.
-3. **Testes Automatizados**:
-   - Adicionar testes unitários para a validação do `QuizService` e testes de widgets para as telas de resposta a quizzes.
 
