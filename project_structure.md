@@ -13,11 +13,11 @@
 ## 1. RESUMO EXECUTIVO DO PROJETO
 
 ### O que é o DesafIA?
-O **DesafIA** é uma aplicação multiplataforma (Web, Android, iOS, Desktop) desenvolvida em **Flutter**, que permite aos utilizadores criar, participar e rever quizzes educativos gerados automaticamente por **Inteligência Artificial (Google Gemini)** a partir de simples prompts em linguagem natural.
+O **DesafIA** é uma aplicação mobile desenvolvida em **Flutter**, que permite aos utilizadores criar, participar e rever quizzes educativos gerados automaticamente por **Inteligência Artificial (Google Gemini)** a partir de simples prompts em linguagem natural.
 
 ### Principais Funcionalidades:
-- **Geração de Quizzes via IA**: Introdução de um tema e número de perguntas (ex: *"História de Portugal 10"*) para gerar automaticamente perguntas e opções estruturadas em Português (pt-pt).
-- **Autenticação de Utilizadores**: Login tradicional (Email/Password) e Social Login (Google, Apple, GitHub) via Firebase Auth.
+- **Criação de Quizzes via IA**: Introdução de um tema e número de perguntas (ex: *"História de Portugal 10"*) para gerar automaticamente perguntas e opções estruturadas em Português (pt-pt).
+- **Autenticação de Utilizadores**: Login tradicional (Email/Password) e Google via Firebase Auth.
 - **Participação e Resolução**: Modos interativos de resposta a quizzes com temporizador e cálculo de pontuação instantâneo.
 - **Gestão de Quizzes do Utilizador**: Edição de quizzes, personalização de perguntas, upload de imagens de capa e publicação pública/privada.
 - **Revisão e Estatísticas**: Ecrãs detalhados com feedback sobre respostas corretas/incorretas.
