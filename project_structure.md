@@ -1,10 +1,4 @@
-# 🚀 GUIA COMPLETO DE ESTUDO E DEFESA DE PROJETO: DesafIA (AI Quiz App)
-
-Este documento foi elaborado para te fornecer **todo o conhecimento técnico, justificações de arquitetura, fluxos de código e estratégias de resposta** para defenderes este projeto com sucesso numa entrevista de emprego, defesa de curso ou apresentação técnica.
-
----
-
-## 📋 ÍNDICE
+## ÍNDICE
 1. [Resumo Executivo do Projeto](#1-resumo-executivo-do-projeto)
 2. [Arquitetura de Software e Padrões de Design](#2-arquitetura-de-software-e-padrões-de-design)
 3. [Stack Tecnológico e Justificação das Escolhas](#3-stack-tecnológico-e-justificação-das-escolhas)
@@ -201,5 +195,3 @@ Demonstrar consciência de pontos a melhorar mostra **maturidade de engenharia**
 3. **Testes Automatizados**:
    - Adicionar testes unitários para a validação do `QuizService` e testes de widgets para as telas de resposta a quizzes.
 
----
-*Ficheiro gerado automaticamente como Guia Oficial de Defesa Técnica do Projeto DesafIA.*
